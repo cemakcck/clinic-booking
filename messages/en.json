@@ -14,5 +14,26 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to home"
+  },
+  "email": {
+    "greeting": "Hello {name},",
+    "when": "When",
+    "treatment": "Treatment",
+    "dentist": "Dentist",
+    "where": "Where",
+    "manage": "Manage your appointment",
+    "footer": "Questions? Call {phone} or write to {email}.",
+    "confirmation": {
+      "subject": "Your appointment is confirmed",
+      "intro": "Your appointment is booked. We look forward to seeing you."
+    },
+    "rescheduled": {
+      "subject": "Your appointment has been rescheduled",
+      "intro": "Your appointment has moved to a new time. The details are below."
+    },
+    "cancelled": {
+      "subject": "Your appointment has been cancelled",
+      "intro": "Your appointment has been cancelled. You are welcome to book a new time whenever suits you."
+    }
   }
 }

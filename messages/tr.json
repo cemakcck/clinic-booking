@@ -14,5 +14,26 @@
   "notFound": {
     "title": "Sayfa bulunamadı",
     "back": "Ana sayfaya dön"
+  },
+  "email": {
+    "greeting": "Merhaba {name},",
+    "when": "Zaman",
+    "treatment": "Tedavi",
+    "dentist": "Diş hekimi",
+    "where": "Adres",
+    "manage": "Randevunuzu yönetin",
+    "footer": "Sorularınız için {phone} numarasını arayın veya {email} adresine yazın.",
+    "confirmation": {
+      "subject": "Randevunuz onaylandı",
+      "intro": "Randevunuz oluşturuldu. Sizi görmek için sabırsızlanıyoruz."
+    },
+    "rescheduled": {
+      "subject": "Randevunuz yeniden planlandı",
+      "intro": "Randevunuz yeni bir saate taşındı. Ayrıntılar aşağıdadır."
+    },
+    "cancelled": {
+      "subject": "Randevunuz iptal edildi",
+      "intro": "Randevunuz iptal edildi. Size uygun olduğunda yeni bir randevu alabilirsiniz."
+    }
   }
 }
