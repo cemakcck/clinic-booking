@@ -17,7 +17,7 @@
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
     "demo:reset": "tsx --env-file-if-exists=.env.local scripts/reset-demo.ts",
-    "user:create": "tsx scripts/create-user.ts"
+    "user:create": "tsx --env-file-if-exists=.env.local scripts/create-user.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.18",

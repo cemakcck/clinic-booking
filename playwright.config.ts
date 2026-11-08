@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { E2E_DEMO_PASSWORD } from "./tests/e2e/constants";
 
 const DB_HOST = "postgres://clinic:clinic@localhost:5433";
 
@@ -11,7 +12,7 @@ const server = (port: number, env: Record<string, string>) => ({
     BETTER_AUTH_SECRET: "e2e-auth-secret-e2e-auth-secret-0123",
     IP_HASH_SECRET: "e2e-ip-hash-secret",
     CRON_SECRET: "e2e-cron-secret",
-    DEMO_PASSWORD: "demo-password",
+    DEMO_PASSWORD: E2E_DEMO_PASSWORD,
     RESEND_API_KEY: "",
     EMAIL_FROM: "",
     ...env,

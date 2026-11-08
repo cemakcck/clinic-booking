@@ -53,8 +53,8 @@
       "patient": "Patient",
       "receptionist": "Receptionist",
       "dentist": "Dentist",
-      "soon": "Staff views open in a later step of the demo",
-      "resets": "Data resets nightly at 03:00"
+      "resets": "Data resets nightly at 03:00",
+      "admin": "Admin"
     },
     "pricing": {
       "note": "Pricing: contact the clinic for a quote",
@@ -302,7 +302,6 @@
       "demoTitle": "Now see it from the clinic's side",
       "demoBody": "Your booking is already in the receptionist's calendar, highlighted for this browser.",
       "demoCta": "Try it as Receptionist",
-      "demoSoon": "Staff views open in a later step of the demo.",
       "cancelledKicker": "Appointment cancelled",
       "cancelledTitle": "Your appointment is cancelled",
       "cancelledLead": "This appointment has been cancelled."
@@ -343,6 +342,44 @@
       "invalidBody": "The link may be mistyped, or the appointment has already taken place. If you need help, call us on {phone}.",
       "home": "Back to home",
       "moveIdle": "Move appointment"
+    }
+  },
+  "staff": {
+    "skip": "Skip to content",
+    "nav": {
+      "label": "Staff",
+      "calendar": "Calendar",
+      "today": "Today",
+      "requests": "Requests",
+      "patients": "Patients",
+      "settings": "Settings"
+    },
+    "signedInAs": "Signed in as",
+    "roles": {
+      "receptionist": "Receptionist",
+      "dentist": "Dentist",
+      "admin": "Admin"
+    },
+    "signOut": "Sign out",
+    "login": {
+      "metaTitle": "Staff sign in",
+      "title": "Staff sign in",
+      "lead": "For Lindenya reception, dentists and admin.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "pending": "Signing in…",
+      "invalid": "That email and password don't match.",
+      "missing": "Enter your email and password.",
+      "demoTitle": "Demo accounts",
+      "demoBody": "One click signs you in as a seeded staff member. Admin settings are view-only in the demo.",
+      "demoAs": "Sign in as {role}",
+      "backToSite": "Back to the website"
+    },
+    "placeholder": {
+      "calendarTitle": "Calendar",
+      "todayTitle": "Today",
+      "body": "This view is being built in the next step of the demo."
     }
   }
 }

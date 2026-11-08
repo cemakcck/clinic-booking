@@ -1,12 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { isDemo } from "@/lib/demo/mode";
+import { demoSignIn } from "@/app/[locale]/staff/login/actions";
 
 export type DemoRole = "patient" | "receptionist" | "dentist" | "admin" | null;
 
 const pill = "inline-flex items-center rounded-full border px-3 py-1.5 leading-none transition-colors";
 
-/** Dark strip above everything, only in demo mode. Staff pills become sign-in forms in Task 12. */
+/**
+ * Dark strip above everything, only in demo mode. The staff pills are one-click sign-in forms;
+ * Receptionist lands on the day of this browser's newest booking (see demoSignIn).
+ */
 export default async function DemoBanner({ role }: { role: DemoRole }) {
   if (!isDemo()) return null;
   const t = await getTranslations("public.demo");
@@ -38,18 +42,27 @@ export default async function DemoBanner({ role }: { role: DemoRole }) {
           >
             {t("patient")}
           </Link>
-          {staff.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              disabled
-              aria-disabled="true"
-              title={t("soon")}
-              className={`${pill} cursor-not-allowed border-white/25 text-white/60`}
-            >
-              {s.label}
-            </button>
-          ))}
+          {staff.map((s) => {
+            const current = role === s.key;
+            return (
+              <form key={s.key} action={demoSignIn.bind(null, s.key, undefined)} className="contents">
+                <button
+                  type="submit"
+                  aria-current={current ? "true" : undefined}
+                  className={`${pill} ${
+                    current ? "border-white bg-white font-bold text-ink" : "border-white/40 hover:border-white hover:bg-white/10"
+                  } cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
+                >
+                  {s.label}
+                </button>
+              </form>
+            );
+          })}
+          {role === "admin" && (
+            <span aria-current="true" className={`${pill} border-white bg-white font-bold text-ink`}>
+              {t("admin")}
+            </span>
+          )}
         </span>
         <span className="text-white/75 sm:ml-auto">{t("resets")}</span>
       </div>

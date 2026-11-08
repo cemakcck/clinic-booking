@@ -8,7 +8,8 @@ import { loadAppointment } from "@/lib/booking/notify";
 import { hashToken } from "@/lib/security/tokens";
 import { isDemo } from "@/lib/demo/mode";
 import { clinic } from "@/config/clinic";
-import { formatLongDate, formatSlotTime } from "@/lib/time";
+import { formatLongDate, formatSlotTime, istanbulDateOf } from "@/lib/time";
+import { demoSignIn } from "@/app/[locale]/staff/login/actions";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -113,16 +114,15 @@ export default async function DonePage({ params, searchParams }: Props) {
           <h2 id="demo-callout-title" className="text-lg font-bold">{t("demoTitle")}</h2>
           <p className="mt-1 text-sm text-white/80">{t("demoBody")}</p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            {/* Task 12 turns this into the one-click receptionist sign-in. */}
-            <button
-              type="button"
-              disabled
-              aria-describedby="demo-callout-soon"
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-card border border-white/40 px-4 py-2.5 text-sm font-semibold text-white/80"
-            >
-              {t("demoCta")} <span aria-hidden="true">→</span>
-            </button>
-            <span id="demo-callout-soon" className="text-[13px] text-white/75">{t("demoSoon")}</span>
+            {/* One-click receptionist sign-in; lands on this booking's day (the magic moment). */}
+            <form action={demoSignIn.bind(null, "receptionist", `/${locale}/staff/calendar?date=${istanbulDateOf(appt.start)}`)}>
+              <button
+                type="submit"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-card bg-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                {t("demoCta")} <span aria-hidden="true">→</span>
+              </button>
+            </form>
           </div>
         </aside>
       )}

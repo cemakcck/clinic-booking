@@ -53,8 +53,8 @@
       "patient": "Hasta",
       "receptionist": "Resepsiyon",
       "dentist": "Hekim",
-      "soon": "Personel ekranları demonun sonraki adımında açılacak",
-      "resets": "Veriler her gece 03:00'te sıfırlanır"
+      "resets": "Veriler her gece 03:00'te sıfırlanır",
+      "admin": "Yönetici"
     },
     "pricing": {
       "note": "Fiyat bilgisi için kliniğimizle iletişime geçin",
@@ -302,7 +302,6 @@
       "demoTitle": "Şimdi kliniğin tarafından bakın",
       "demoBody": "Randevunuz resepsiyon takviminde şimdiden yer alıyor ve bu tarayıcı için vurgulanıyor.",
       "demoCta": "Resepsiyonist olarak deneyin",
-      "demoSoon": "Personel ekranları demonun sonraki bir adımında açılacak.",
       "cancelledKicker": "Randevu iptal edildi",
       "cancelledTitle": "Randevunuz iptal edildi",
       "cancelledLead": "Bu randevu iptal edildi."
@@ -343,6 +342,44 @@
       "invalidBody": "Bağlantı yanlış yazılmış olabilir ya da randevu zaten gerçekleşmiş olabilir. Yardım için {phone} numarasını arayın.",
       "home": "Ana sayfaya dön",
       "moveIdle": "Randevuyu taşı"
+    }
+  },
+  "staff": {
+    "skip": "İçeriğe geç",
+    "nav": {
+      "label": "Personel",
+      "calendar": "Takvim",
+      "today": "Bugün",
+      "requests": "Talepler",
+      "patients": "Hastalar",
+      "settings": "Ayarlar"
+    },
+    "signedInAs": "Giriş yapan",
+    "roles": {
+      "receptionist": "Resepsiyon",
+      "dentist": "Hekim",
+      "admin": "Yönetici"
+    },
+    "signOut": "Çıkış yap",
+    "login": {
+      "metaTitle": "Personel girişi",
+      "title": "Personel girişi",
+      "lead": "Lindenya resepsiyonu, hekimleri ve yöneticileri için.",
+      "email": "E-posta",
+      "password": "Şifre",
+      "submit": "Giriş yap",
+      "pending": "Giriş yapılıyor…",
+      "invalid": "E-posta ve şifre eşleşmiyor.",
+      "missing": "E-posta adresinizi ve şifrenizi girin.",
+      "demoTitle": "Demo hesapları",
+      "demoBody": "Tek tıkla örnek bir personel hesabıyla giriş yapın. Demoda yönetici ayarları yalnızca görüntülenebilir.",
+      "demoAs": "{role} olarak giriş yap",
+      "backToSite": "Web sitesine dön"
+    },
+    "placeholder": {
+      "calendarTitle": "Takvim",
+      "todayTitle": "Bugün",
+      "body": "Bu ekran demonun bir sonraki adımında hazırlanıyor."
     }
   }
 }

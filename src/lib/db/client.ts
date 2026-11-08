@@ -23,13 +23,23 @@ const g = globalThis as unknown as {
   __clinicMigrate?: Promise<void>;
 };
 
+/**
+ * The process-wide client, created on first use (so scripts/tests can set DATABASE_URL first)
+ * but without waiting for migrations. Prefer `db()`; this exists for libraries that need a
+ * client synchronously at construction time (Better Auth's drizzle adapter).
+ */
+export function sharedDb(): Db {
+  g.__clinicDb ??= createDb();
+  return g.__clinicDb;
+}
+
 /** Shared client; migrates once per process, retrying if a migration attempt failed. */
 export async function db(): Promise<Db> {
-  g.__clinicDb ??= createDb();
-  g.__clinicMigrate ??= migrateDb(g.__clinicDb).catch((e) => {
+  const shared = sharedDb();
+  g.__clinicMigrate ??= migrateDb(shared).catch((e) => {
     g.__clinicMigrate = undefined;
     throw e;
   });
   await g.__clinicMigrate;
-  return g.__clinicDb;
+  return shared;
 }
