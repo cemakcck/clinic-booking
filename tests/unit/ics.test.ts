@@ -19,7 +19,7 @@ describe("buildIcs", () => {
     expect(ics).toContain("DTEND:20261110T120000Z");
     expect(ics).toContain("DTSTAMP:20261108T090000Z");
     expect(ics).toContain("SUMMARY:Check-up\\, cleaning");
-    expect(ics).toContain("LOCATION:Moda Cd. 12\; Kadıköy");
+    expect(ics).toContain("LOCATION:Moda Cd. 12\\; Kadıköy");
     expect(ics).toContain("Line one\\nLine two");
     expect(ics).toContain("METHOD:PUBLISH");
     expect(ics).toContain("UID:abc@lindenya.example");
