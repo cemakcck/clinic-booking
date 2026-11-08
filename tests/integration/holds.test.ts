@@ -154,6 +154,26 @@ describe("confirm", () => {
     expect(await code(confirm(a, { now: min(7) }))).toBe("hold_expired");
   });
 
+  it("re-acquiring an expired hold races a new hold for the slot: exactly one gets it", async () => {
+    for (let round = 0; round < 10; round++) {
+      await db.delete(entries);
+      const a = await hold({ ipHash: `ip-r${round}` });
+      const [c, p] = await Promise.allSettled([
+        confirm(a, { now: min(7), ipHash: `ip-rc${round}` }),
+        hold({ now: min(7), ipHash: `ip-rp${round}` }),
+      ]);
+      const outcome = [
+        c.status === "fulfilled" ? "confirmed" : await code(Promise.reject(c.reason)),
+        p.status === "fulfilled" ? "held" : await code(Promise.reject(p.reason)),
+      ];
+      expect([
+        ["confirmed", "slot_taken"],
+        ["hold_expired", "held"],
+      ]).toContainEqual(outcome);
+      expect(await db.select().from(entries)).toHaveLength(1);
+    }
+  }, 30_000);
+
   it("fails with hold_expired when the expired hold is no longer bookable", async () => {
     const a = await hold();
     // 09:00: the hold has expired and 10:00 is now inside the 2h public lead time.

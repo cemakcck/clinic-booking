@@ -8,7 +8,7 @@ import { pickAnyDentist } from "@/lib/slots/engine";
 import type { Locale } from "@/i18n/routing";
 import { assertBookable, getDaySlots } from "./availability";
 import { BookingError } from "./errors";
-import { insertEntry, updateEntryRange } from "./entries";
+import { insertEntry, lockDentistEntries, updateEntryRange } from "./entries";
 import { upsertPatient } from "./patients";
 import { checkAndRecordRate } from "@/lib/security/rate-limit";
 import { deriveManageToken, hashToken, newToken } from "@/lib/security/tokens";
@@ -156,6 +156,11 @@ export async function confirmBooking(
   await checkAndRecordRate(db, "confirm", q.ipHash, q.now);
 
   return db.transaction(async (tx) => {
+    // Dentist lock before the row lock (see lockDentistEntries): a concurrent placeHold holds it
+    // while its sweep waits for this row, so taking it after FOR UPDATE could deadlock.
+    const [peek] = await tx.select({ dentistId: entries.dentistId }).from(entries).where(eq(entries.id, q.holdId));
+    if (!peek) throw new BookingError("hold_expired");
+    await lockDentistEntries(tx, peek.dentistId);
     // FOR UPDATE serialises concurrent double submits of the same hold.
     const [row] = await tx.select().from(entries).where(eq(entries.id, q.holdId)).for("update");
     if (!row) throw new BookingError("hold_expired");

@@ -43,7 +43,22 @@ async function sweepExpiredHolds(tx: DbOrTx, dentistId: number, range: Interval,
     );
 }
 
+/**
+ * Serialises writes to one dentist's entries until the transaction ends. Concurrent inserts into
+ * the GiST exclusion constraint can otherwise each wait on the other's uncommitted row: a deadlock
+ * (40P01) that Postgres only breaks after deadlock_timeout, one victim per second. Holding this
+ * lock, an inserter sees the previous writer's committed row and gets 23P01 at once.
+ *
+ * Must run inside a transaction, before taking any row lock on this dentist's entries (lock order:
+ * dentist, then rows), or two writers can deadlock on this lock and a row lock instead.
+ */
+export async function lockDentistEntries(tx: DbOrTx, dentistId: number): Promise<void> {
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('entries:dentist'), ${dentistId})`);
+}
+
+/** Inside a transaction: takes the dentist lock, sweeps expired holds, inserts. */
 export async function insertEntry(tx: DbOrTx, row: NewEntry, now: Date): Promise<string> {
+  await lockDentistEntries(tx, row.dentistId);
   await sweepExpiredHolds(tx, row.dentistId, row.during as Interval, now);
   return withSlotTaken(async () => {
     const [r] = await tx.insert(entries).values(row).returning({ id: entries.id });
@@ -51,6 +66,7 @@ export async function insertEntry(tx: DbOrTx, row: NewEntry, now: Date): Promise
   });
 }
 
+/** Inside a transaction; take the entry's dentist lock before locking its row (see confirmBooking). */
 export async function updateEntryRange(
   tx: DbOrTx,
   id: string,
@@ -58,6 +74,7 @@ export async function updateEntryRange(
   range: Interval,
   now: Date,
 ): Promise<void> {
+  await lockDentistEntries(tx, dentistId);
   await sweepExpiredHolds(tx, dentistId, range, now, id);
   await withSlotTaken(async () => {
     await tx.update(entries).set({ dentistId, during: range, updatedAt: now }).where(eq(entries.id, id));
