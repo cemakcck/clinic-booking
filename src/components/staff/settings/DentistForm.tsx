@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { saveDentistAction } from "@/app/[locale]/staff/(app)/settings/actions";
 import { field, label as labelCls } from "@/components/calendar/ui";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { formatLongDate, istanbulDateOf, istanbulTimeOf } from "@/lib/time";
 import { CheckField, FormFooter, TextField, useSaver } from "./form-kit";
 
 export type DentistValues = {
@@ -22,6 +23,7 @@ export default function DentistForm({
   const t = useTranslations("staff.settings");
   const td = useTranslations("staff.settings.dentists");
   const router = useRouter();
+  const locale = useLocale() as "en" | "tr";
   const [formRef, s] = useSaver();
   const [v, setV] = useState({ ...initial, sortOrder: String(initial.sortOrder) });
   const [hours, setHours] = useState<Record<number, { on: boolean; start: string; end: string }>>(() =>
@@ -118,7 +120,33 @@ export default function DentistForm({
           })}
         </div>
       </fieldset>
-      <FormFooter demo={demo} pending={s.pending} alert={s.alert} status={s.status} note={note} />
+      <FormFooter
+        demo={demo}
+        pending={s.pending}
+        alert={s.alert}
+        status={s.status}
+        note={note}
+        alertExtra={
+          s.appointments.length > 0 && (
+            <ul data-testid="dentist-appointments" className="mt-2 grid gap-1">
+              {s.appointments.map((a) => {
+                const start = new Date(a.start);
+                const date = istanbulDateOf(start);
+                return (
+                  <li key={a.id}>
+                    <Link
+                      href={`/staff/calendar?view=day&date=${date}&open=${a.id}`}
+                      className="font-semibold text-brand underline underline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand"
+                    >
+                      {td("appointmentItem", { name: a.patientName, when: `${formatLongDate(date, locale)}, ${istanbulTimeOf(start)}` })}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        }
+      />
     </form>
   );
 }

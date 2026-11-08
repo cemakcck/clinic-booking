@@ -128,7 +128,7 @@ test("tr booking flow is Turkish", async ({ page }) => {
   await page.getByTestId("slot").first().click();
   await page.getByTestId("summary").getByRole("button", { name: "Devam" }).click();
   await expect(page.getByRole("heading", { name: "Bilgileriniz" })).toBeVisible();
-  await expect(page.getByText("Bu bir demodur.")).toBeVisible();
+  await expect(page.getByText("Bu herkese açık bir demo:", { exact: false })).toBeVisible();
   const body = await page.locator("body").innerText();
   expect(body).not.toContain("Your details");
   expect(body).not.toContain("Pick a time");
@@ -153,6 +153,6 @@ test("step 4 privacy note is shown", async ({ page }) => {
   await page.goto("/en/book?treatment=checkup&dentist=any");
   await toDetails(page);
   await expect(
-    page.getByText("This is a demo. Your details are only used for this booking and are wiped every night"),
+    page.getByText("This is a public demo: other visitors trying it can see bookings, so use a made-up name. Data is wiped every night."),
   ).toBeVisible();
 });

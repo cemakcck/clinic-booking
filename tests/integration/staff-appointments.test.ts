@@ -190,15 +190,18 @@ describe("createStaffAppointment", () => {
 
   it("a walk-in without an email keeps the email already on file", async () => {
     await db.insert(patients).values({ name: "Old", phoneE164: "+905329998877", email: "keep@mail.test", locale: "en" });
-    await createStaffAppointment(db, reception, {
+    const { appointmentId } = await createStaffAppointment(db, reception, {
       treatmentId: fx.treatments.checkup,
       dentistId: fx.dentists.ayd,
       start: T(WED, "10:00"),
       patient,
       now,
     });
+    // The shared patient row is fill-only; this booking's name and locale live on the appointment.
     const [p] = await db.select().from(patients).where(eq(patients.phoneE164, "+905329998877"));
-    expect(p).toMatchObject({ name: "Çağlar Öztürk", email: "keep@mail.test", locale: "tr" });
+    expect(p).toMatchObject({ name: "Old", email: "keep@mail.test", locale: "en" });
+    const [e] = await db.select().from(entries).where(eq(entries.id, appointmentId));
+    expect(e).toMatchObject({ contactName: "Çağlar Öztürk", contactEmail: null, contactLocale: "tr" });
   });
 
   it("dentist creates on own calendar only; bad phone is invalid", async () => {

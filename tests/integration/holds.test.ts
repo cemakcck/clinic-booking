@@ -201,10 +201,14 @@ describe("confirm", () => {
     const h1 = await hold();
     await confirm(h1);
     const h2 = await hold({ start: T(D, "14:00") });
-    await confirm(h2, { patient: { ...patient, phone: "+905321112233", name: "Çağlar O." } });
+    const r2 = await confirm(h2, { patient: { ...patient, phone: "+905321112233", name: "Çağlar O." } });
     const ps = await db.select().from(patients);
     expect(ps).toHaveLength(1);
-    expect(ps[0].name).toBe("Çağlar O.");
+    // The shared patient row is fill-only; the name typed this time lives on the appointment.
+    expect(ps[0].name).toBe("Çağlar Öztürk");
+    const [row] = await db.select().from(entries).where(eq(entries.id, r2.appointmentId));
+    expect(row.patientId).toBe(ps[0].id);
+    expect(row.contactName).toBe("Çağlar O.");
   });
 });
 

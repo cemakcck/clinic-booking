@@ -1,4 +1,4 @@
-import { and, count, eq, gte, inArray } from "drizzle-orm";
+import { and, count, eq, gte, inArray, sql } from "drizzle-orm";
 import { Resend } from "resend";
 import type { DbOrTx } from "@/lib/db/client";
 import { emailLog } from "@/lib/db/schema";
@@ -28,6 +28,9 @@ export type EmailDeps = { resend?: { send(args: unknown): Promise<unknown> } };
 
 const DAY_MS = 86_400_000;
 
+/** Addresses are logged and capped case-insensitively: "A@x.com" and "a@x.com" are one inbox. */
+const normalizeAddress = (to: string | null) => (to ?? "").trim().toLowerCase();
+
 function isSuppressed(to: string | null): boolean {
   if (!to) return true;
   const a = to.trim().toLowerCase();
@@ -43,7 +46,8 @@ async function decide(db: DbOrTx, m: EmailMessage, deps: EmailDeps): Promise<Ema
   const [addr] = await db
     .select({ n: count() })
     .from(emailLog)
-    .where(and(eq(emailLog.toAddress, m.to!.trim()), counted, gte(emailLog.createdAt, since)));
+    // lower() also catches rows logged before addresses were normalised.
+    .where(and(eq(sql`lower(${emailLog.toAddress})`, normalizeAddress(m.to)), counted, gte(emailLog.createdAt, since)));
   if (addr.n >= EMAIL_CAP_PER_ADDRESS_PER_DAY) return "capped";
   if (m.ipHash) {
     const [ip] = await db
@@ -92,7 +96,7 @@ export async function sendEmail(
   try {
     await db.insert(emailLog).values({
       kind: m.kind,
-      toAddress: (m.to ?? "").trim(),
+      toAddress: normalizeAddress(m.to),
       locale: m.locale,
       subject: m.subject.replace(/[\r\n]+/g, " "),
       status,

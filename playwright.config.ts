@@ -25,6 +25,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 60_000,
+  // One retry on CI absorbs a cold dev-server compile; locally a flake should be seen.
+  retries: process.env.CI ? 1 : 0,
   use: { ...devices["Desktop Chrome"] },
   // Two servers: demo mode (default) and live mode. Tests tagged @live run against the second one only.
   webServer: [

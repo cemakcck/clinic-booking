@@ -38,6 +38,11 @@ test("magic moment: the visitor's booking is highlighted on the receptionist cal
   await expect(mine).toHaveCount(1);
   await expect(mine).toContainText("★ Your booking");
   await expect(mine).toContainText("Ayşe Yılmaz");
+  // The visitor's own booking shows their own phone; other visitors' online bookings are masked.
+  await mine.click();
+  const phone = page.getByRole("dialog").getByTestId("appt-phone");
+  await expect(phone).toHaveText("+90 532 111 22 33");
+  await expect(phone).toHaveAttribute("href", "tel:+905321112233");
 });
 
 test("day view shows a column per dentist and counters", async ({ page }) => {

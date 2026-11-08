@@ -4,6 +4,8 @@ import { callbackRequests, treatments } from "@/lib/db/schema";
 import { can } from "@/lib/auth/permissions";
 import type { Actor } from "@/lib/auth/roles";
 import { BookingError } from "@/lib/booking/errors";
+import { isDemo } from "@/lib/demo/mode";
+import { maskPhone } from "@/lib/demo/mask";
 
 export type RequestStatus = "new" | "contacted" | "closed";
 export type RequestFilter = RequestStatus | "all";
@@ -20,17 +22,22 @@ export type RequestRow = {
   createdAt: Date;
   treatmentEn: string | null;
   treatmentTr: string | null;
+  /** Demo mode: phone masked and message withheld (requests carry no "mine" marker). */
+  masked: boolean;
 };
 
 function guard(actor: Actor) {
   if (!can(actor, "requests.view")) throw new BookingError("forbidden");
 }
 
-/** Call-back requests, newest first (at most REQUEST_LIMIT). Receptionist and admin only. */
+/**
+ * Call-back requests, newest first (at most REQUEST_LIMIT). Receptionist and admin only. In the
+ * public demo every phone is masked and every message withheld: they come from other visitors.
+ */
 export async function listRequests(db: DbOrTx, actor: Actor, filter: RequestFilter): Promise<RequestRow[]> {
   guard(actor);
   const where: SQL | undefined = filter === "all" ? undefined : eq(callbackRequests.status, filter);
-  return db
+  const rows = await db
     .select({
       id: callbackRequests.id,
       name: callbackRequests.name,
@@ -47,6 +54,8 @@ export async function listRequests(db: DbOrTx, actor: Actor, filter: RequestFilt
     .where(where)
     .orderBy(desc(callbackRequests.createdAt), desc(callbackRequests.id))
     .limit(REQUEST_LIMIT);
+  const demo = isDemo();
+  return rows.map((r) => (demo ? { ...r, phone: maskPhone(r.phone), message: null, masked: true } : { ...r, masked: false }));
 }
 
 /** How many requests are still new; 0 (not an error) for roles that can't see requests. */

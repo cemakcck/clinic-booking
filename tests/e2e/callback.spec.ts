@@ -7,6 +7,7 @@ test("treatment page leads to the contact form with the treatment preselected, E
   await page.getByTestId("pricing-note").getByRole("link", { name: "Request a call back" }).first().click();
   await expect(page).toHaveURL(/\/en\/contact\?treatment=whitening#callback/);
   await expect(page.getByLabel("Treatment (optional)")).toHaveValue("whitening");
+  await expect(page.getByText("This is a public demo: other visitors trying it can see requests")).toBeVisible();
   await page.getByLabel("Your name").fill("Ayşe Yılmaz");
   await page.getByLabel("Phone number").fill("0532 111 22 33");
   await page.getByLabel("Preferred language").selectOption("tr");

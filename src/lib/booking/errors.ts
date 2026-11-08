@@ -6,6 +6,7 @@ export type BookingErrorCode =
   | "link_expired"
   | "rate_limited"
   | "block_conflict"
+  | "dentist_has_appointments"
   | "capacity_floor"
   | "forbidden"
   | "demo_disabled"

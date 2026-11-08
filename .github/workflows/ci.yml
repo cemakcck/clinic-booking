@@ -46,6 +46,12 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: End-to-end tests
         run: npm run test:e2e
+      # The production build prerenders public pages from the database, so give it a migrated,
+      # seeded one (the service's own `clinic` database, which the tests above leave alone).
+      - name: Migrate and seed the build database
+        run: npm run db:migrate && npm run db:seed
+      - name: Production build
+        run: npm run build
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

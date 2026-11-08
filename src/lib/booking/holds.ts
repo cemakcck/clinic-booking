@@ -177,6 +177,9 @@ export async function confirmBooking(
         status: "booked",
         source: "online",
         patientId,
+        contactName: q.patient.name.trim(),
+        contactEmail: q.patient.email,
+        contactLocale: q.patient.locale,
         manageTokenHash: hashToken(manageToken),
         createdBy: q.demoOwner ?? null,
         updatedAt: q.now,
@@ -191,7 +194,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 /**
  * Lets a patient give back their own hold (e.g. "Change time"), so the slot is free again at
  * once. Deletes only a row that is still a hold and matches the token; anything else, including
- * an appointment made from that hold, is left untouched.
+ * an appointment made from that hold, is left untouched. One autocommit DELETE without the
+ * dentist lock: a documented exemption from the lockDentists rules (see entries.ts).
  */
 export async function releaseHold(db: Db, q: { holdId: string; holdToken: string }): Promise<void> {
   if (typeof q.holdId !== "string" || !UUID_RE.test(q.holdId) || typeof q.holdToken !== "string" || !q.holdToken) return;

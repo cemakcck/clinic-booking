@@ -10,6 +10,7 @@ import {
   elifId,
   entryRows,
   freeDay,
+  minutesLeftToday,
   quietDate,
   weeklyFreeStart,
 } from "./calendar-db";
@@ -24,6 +25,9 @@ async function asDentist(page: Page, path = "/en/staff/today") {
   await expect(page).toHaveURL(/\/en\/staff\/today$/);
   if (path !== "/en/staff/today") await page.goto(path);
 }
+
+/** Today-only fixtures need room before midnight; skip them late at night so the suite passes at any hour. */
+const skipLate = () => test.skip(minutesLeftToday() < 90, "less than 90 minutes left today for a today fixture");
 
 const weekUrl = (date: string, dentistId: number) => `/en/staff/calendar?view=week&date=${date}&dentist=${dentistId}`;
 
@@ -43,6 +47,7 @@ test.describe("phone", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("dentist lands on today with the next patient highlighted", async ({ page }) => {
+    skipLate();
     const id = await elifId();
     const a = await addTodayAppointment(id, `Next Up ${rand()}`);
     try {
@@ -76,6 +81,7 @@ test.describe("phone", () => {
   });
 
   test("dentist marks own patient arrived", async ({ page }) => {
+    skipLate();
     const a = await addTodayAppointment(await elifId(), `Mark Arrived ${rand()}`);
     try {
       await asDentist(page);
@@ -113,6 +119,7 @@ test.describe("phone", () => {
   });
 
   test("axe on today", async ({ page }) => {
+    skipLate();
     const a = await addTodayAppointment(await elifId(), `Axe ${rand()}`);
     try {
       await asDentist(page);

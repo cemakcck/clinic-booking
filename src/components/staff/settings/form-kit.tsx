@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { btnPrimary, field, label as labelCls } from "@/components/calendar/ui";
 import type { SettingsResult } from "@/app/[locale]/staff/(app)/settings/actions";
+import type { BlockingAppointment } from "@/lib/staff/settings";
 
 export const idOf = (prefix: string, name: string) => `${prefix}-${name.replace(/\./g, "-")}`;
 
@@ -67,6 +68,7 @@ export function useSaver() {
   const [fields, setFields] = useState<Record<string, string>>({});
   const [alert, setAlert] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [appointments, setAppointments] = useState<BlockingAppointment[]>([]);
   const [tick, setTick] = useState(0);
 
   const msg = (key: string) => (t.has(`errors.${key}`) ? t(`errors.${key}`) : t("errors.invalid"));
@@ -88,17 +90,20 @@ export function useSaver() {
       if (r.ok) {
         setFields({});
         setAlert(null);
+        setAppointments([]);
         setStatus(okText);
         onOk(r);
       } else {
         const f = Object.fromEntries(Object.entries(r.fields ?? {}).map(([k, v]) => [k, msg(v)]));
         setFields(f);
+        setAppointments(r.appointments ?? []);
         const hasFields = Object.keys(f).length > 0;
         setAlert(hasFields && r.code === "invalid" ? t("errors.summary") : msg(r.code === "invalid" ? "form" : r.code));
         setTick((n) => n + 1);
       }
     } catch {
       setFields({});
+      setAppointments([]);
       setAlert(t("errors.generic"));
       setTick((n) => n + 1);
     } finally {
@@ -106,12 +111,12 @@ export function useSaver() {
     }
   }
 
-  return [ref, { pending, fields, alert, status, save }] as const;
+  return [ref, { pending, fields, alert, status, appointments, save }] as const;
 }
 
 /** Save button (disabled in the demo, described by the note) plus the live regions. */
 export function FormFooter({
-  demo, pending, alert, status, note, saveLabel,
+  demo, pending, alert, status, note, saveLabel, alertExtra,
 }: {
   demo: boolean;
   pending: boolean;
@@ -119,15 +124,18 @@ export function FormFooter({
   status: string | null;
   note: ReactNode;
   saveLabel?: string;
+  /** Shown inside the alert, e.g. the appointments to move first. */
+  alertExtra?: ReactNode;
 }) {
   const t = useTranslations("staff.settings");
   return (
     <div className="mt-5 grid gap-3">
       {demo && note}
       {alert && (
-        <p role="alert" tabIndex={-1} className="rounded-card bg-white p-3 text-sm font-semibold text-[#8a1c14] ring-1 ring-[#b3261e] outline-none focus:ring-2">
-          {alert}
-        </p>
+        <div role="alert" tabIndex={-1} className="rounded-card bg-white p-3 text-sm text-[#8a1c14] ring-1 ring-[#b3261e] outline-none focus:ring-2">
+          <p className="font-semibold">{alert}</p>
+          {alertExtra}
+        </div>
       )}
       <div className="flex items-center gap-3">
         <button type="submit" className={btnPrimary} disabled={demo || pending} aria-describedby={demo ? "demo-note" : undefined}>

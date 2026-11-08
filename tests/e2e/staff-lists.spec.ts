@@ -28,6 +28,10 @@ test("receptionist marks a request contacted: it moves filters and the sidebar c
     const card = page.locator(`[data-request-id="${req.id}"]`);
     await expect(card).toContainText(name);
     await expect(card.getByTestId("request-status")).toHaveText("New");
+    // Public demo: other visitors' numbers and messages never reach the page.
+    await expect(card).toContainText("+90 5•• ••• •• 23");
+    await expect(card).toContainText("Hidden in the demo");
+    await expect(card).not.toContainText("E2E request");
     const before = Number(await badge(page).textContent());
     expect(before).toBeGreaterThanOrEqual(1);
 

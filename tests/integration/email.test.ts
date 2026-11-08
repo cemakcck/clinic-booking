@@ -68,6 +68,15 @@ describe("sendEmail", () => {
     expect(out).toEqual(["logged", "logged", "logged", "logged", "logged", "capped"]);
   });
 
+  it("cap per address ignores case and surrounding spaces", async () => {
+    const out: string[] = [];
+    const variants = ["A@x.test", "a@x.test", " a@X.test ", "A@X.TEST", "a@x.test", "a@x.Test"];
+    for (const to of variants) out.push(await sendEmail(db, msg({ to })));
+    expect(out).toEqual(["logged", "logged", "logged", "logged", "logged", "capped"]);
+    const rows = await db.select().from(emailLog);
+    expect(new Set(rows.map((r) => r.toAddress))).toEqual(new Set(["a@x.test"]));
+  });
+
   it("cap per ip hash", async () => {
     const out: string[] = [];
     for (let i = 0; i < 11; i++) out.push(await sendEmail(db, msg({ to: `p${i}@gmail.test`, ipHash: "h" })));

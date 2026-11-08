@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { DbOrTx } from "@/lib/db/client";
 import {
@@ -7,6 +7,8 @@ import {
   closedDates,
   dentists,
   dentistTreatments,
+  entries,
+  patients,
   treatments,
   workingHours,
 } from "@/lib/db/schema";
@@ -14,6 +16,7 @@ import { can } from "@/lib/auth/permissions";
 import type { Actor } from "@/lib/auth/roles";
 import { BookingError } from "@/lib/booking/errors";
 import { isDemo } from "@/lib/demo/mode";
+import { lockDentists } from "@/lib/booking/entries";
 
 /** Field errors travel as `BookingError("invalid", { fields })`; values are `staff.settings.errors` keys. */
 export type FieldErrors = Record<string, string>;
@@ -233,14 +236,52 @@ export async function saveTreatment(db: DbOrTx, actor: Actor, input: TreatmentIn
   }
 }
 
-/** Replaces the dentist's treatments and weekly hours. Existing appointments are never touched. */
-export async function saveDentist(db: DbOrTx, actor: Actor, input: DentistInput): Promise<number> {
+/** One appointment that stops a dentist being deactivated (start is an ISO instant). */
+export type BlockingAppointment = { id: string; start: string; patientName: string };
+
+/**
+ * Replaces the dentist's treatments and weekly hours. Existing appointments are never touched.
+ * Deactivating a dentist who still has booked appointments ending after `now` is refused with
+ * `dentist_has_appointments` and the list, so none are stranded off the calendar.
+ */
+export async function saveDentist(db: DbOrTx, actor: Actor, input: DentistInput, now: Date = new Date()): Promise<number> {
   editGuard(actor);
   const v = parse(DentistInput, input);
   const { id, treatmentIds, hours, ...values } = v;
   const ids = [...new Set(treatmentIds)];
   try {
     return await db.transaction(async (tx) => {
+      if (id !== undefined && !values.active) {
+        // The dentist lock serialises this check with bookings for them: one that commits first
+        // shows up here, one that waits sees the dentist inactive afterwards.
+        await lockDentists(tx, [id]);
+        const rows = await tx
+          .select({
+            id: entries.id,
+            during: entries.during,
+            patientName: sql<string | null>`coalesce(${entries.contactName}, ${patients.name})`,
+          })
+          .from(entries)
+          .leftJoin(patients, eq(patients.id, entries.patientId))
+          .where(
+            and(
+              eq(entries.dentistId, id),
+              eq(entries.kind, "appointment"),
+              eq(entries.active, true),
+              eq(entries.status, "booked"),
+              sql`upper(${entries.during}) > ${now.toISOString()}::timestamptz`,
+            ),
+          )
+          .orderBy(asc(entries.during));
+        if (rows.length) {
+          const appointments: BlockingAppointment[] = rows.map((r) => ({
+            id: r.id,
+            start: r.during.start.toISOString(),
+            patientName: r.patientName ?? "",
+          }));
+          throw new BookingError("dentist_has_appointments", { appointments });
+        }
+      }
       if (ids.length) {
         const found = await tx.select({ id: treatments.id }).from(treatments).where(inArray(treatments.id, ids));
         if (found.length !== ids.length) throw new BookingError("invalid", { fields: { treatmentIds: "invalid" } satisfies FieldErrors });

@@ -11,10 +11,13 @@ import {
   saveClinicHours,
   saveDentist,
   saveTreatment,
+  type BlockingAppointment,
   type FieldErrors,
 } from "@/lib/staff/settings";
 
-export type SettingsResult = { ok: true; id?: number } | { ok: false; code: BookingErrorCode; fields?: FieldErrors };
+export type SettingsResult =
+  | { ok: true; id?: number }
+  | { ok: false; code: BookingErrorCode; fields?: FieldErrors; appointments?: BlockingAppointment[] };
 
 /** Public pages cache for 5 minutes; a save must show up at once, in both locales. */
 function refreshPublic() {
@@ -34,8 +37,8 @@ async function run(fn: (d: Awaited<ReturnType<typeof db>>, actor: Awaited<Return
     return typeof id === "number" ? { ok: true, id } : { ok: true };
   } catch (e) {
     if (e instanceof BookingError) {
-      const fields = (e.details as { fields?: FieldErrors } | undefined)?.fields;
-      return { ok: false, code: e.code, fields };
+      const d = e.details as { fields?: FieldErrors; appointments?: BlockingAppointment[] } | undefined;
+      return { ok: false, code: e.code, fields: d?.fields, appointments: d?.appointments };
     }
     throw e;
   }

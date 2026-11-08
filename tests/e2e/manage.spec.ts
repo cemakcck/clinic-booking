@@ -74,7 +74,7 @@ test("within the cutoff the page asks to call the clinic", async ({ page }) => {
   await page.goto(`/en/booking/${token}`);
   const call = page.getByTestId("call-clinic");
   await expect(call).toContainText("Please call the clinic");
-  await expect(call).toContainText("+90 216 555 01 42");
+  await expect(call).toContainText("+90 216 000 00 00");
   await expect(page.getByRole("button", { name: "Reschedule" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Cancel appointment" })).toHaveCount(0);
 });

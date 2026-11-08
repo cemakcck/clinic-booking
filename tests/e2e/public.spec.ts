@@ -30,7 +30,7 @@ test("treatment detail shows PricingNote with call and call-back", async ({ page
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Teeth whitening");
   const note = page.getByTestId("pricing-note");
   await expect(note).toContainText("Pricing: contact the clinic for a quote");
-  await expect(note.getByRole("link", { name: /call/i }).first()).toHaveAttribute("href", "tel:+902165550142");
+  await expect(note.getByRole("link", { name: /call/i }).first()).toHaveAttribute("href", "tel:+902160000000");
   await expect(note.getByRole("link", { name: "Request a call back" })).toHaveAttribute(
     "href",
     "/en/contact?treatment=whitening#callback",
@@ -65,7 +65,7 @@ test("international page exists in en and tr", async ({ page }) => {
 
 test("contact page shows address and hours", async ({ page }) => {
   await page.goto("/en/contact");
-  await expect(page.getByText("Moda Cd. No: 112", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("Lindenya Sokağı No: 1", { exact: false }).first()).toBeVisible();
   await expect(page.locator("#callback")).toBeAttached();
   await expect(page.getByText("09:00–18:00").first()).toBeVisible();
 });

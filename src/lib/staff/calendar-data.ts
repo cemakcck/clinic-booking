@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/lib/db/client";
 import {
   clinicHours,
@@ -19,8 +19,13 @@ import { effectiveHours, type HoursRange } from "@/lib/slots/engine";
 import { dayBounds } from "@/lib/calendar/geometry";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
 import { BookingError } from "@/lib/booking/errors";
+import { isDemo } from "@/lib/demo/mode";
+import { maskPhone } from "@/lib/demo/mask";
 import { findOutsideHours } from "./outside-hours";
 import type { BlockReason } from "./blocks";
+
+/** The name typed for this booking, else the shared patient row's (seeded and legacy rows). */
+const contactName = sql<string | null>`coalesce(${entries.contactName}, ${patients.name})`;
 
 export type CalStatus = "booked" | "arrived" | "completed" | "no_show";
 
@@ -44,6 +49,8 @@ export type CalEntry = {
   seriesId?: string;
   editable: boolean;
   mine?: boolean;
+  /** Demo mode: another visitor's online booking, so the phone is masked (see lib/demo/mask). */
+  contactMasked?: boolean;
 };
 
 export type Counters = { appointments: number; arrived: number; noShows: number; freeSlotsToday: number };
@@ -80,8 +87,9 @@ async function loadEntries(
       treatmentId: entries.treatmentId,
       nameEn: treatments.nameEn,
       nameTr: treatments.nameTr,
-      patientName: patients.name,
+      patientName: contactName,
       patientPhone: patients.phoneE164,
+      source: entries.source,
     })
     .from(entries)
     .leftJoin(treatments, eq(treatments.id, entries.treatmentId))
@@ -96,6 +104,7 @@ async function loadEntries(
     )
     .orderBy(asc(entries.during));
   const mine = new Set(opts.mine ?? []);
+  const demo = isDemo();
   return rows.map((r): CalEntry => {
     const base = {
       id: r.id,
@@ -115,12 +124,16 @@ async function loadEntries(
       };
     }
     const editable = can(actor, "appointment.manage", { dentistId: r.dentistId });
+    // Public demo: other visitors' online bookings never carry their real phone number.
+    const masked = demo && r.source === "online" && !mine.has(r.id);
+    const phone = r.patientPhone ? (masked ? maskPhone(r.patientPhone) : r.patientPhone) : undefined;
     return {
       ...base,
       kind: "appointment",
       status: (r.status ?? "booked") as CalStatus,
       patientName: r.patientName ?? "",
-      patientPhone: editable ? (r.patientPhone ?? undefined) : undefined,
+      patientPhone: editable ? phone : undefined,
+      ...(masked && editable && phone ? { contactMasked: true } : {}),
       treatmentId: r.treatmentId ?? undefined,
       treatmentName: (opts.locale === "tr" ? r.nameTr : r.nameEn) ?? "",
       editable,
@@ -346,7 +359,7 @@ export async function getTodayForDentist(
       id: entries.id,
       during: entries.during,
       status: entries.status,
-      patientName: patients.name,
+      patientName: contactName,
       nameEn: treatments.nameEn,
       nameTr: treatments.nameTr,
     })

@@ -28,7 +28,7 @@ export type AppointmentView = {
 
 const asLocale = (l: string): Locale => ((routing.locales as readonly string[]).includes(l) ? (l as Locale) : "en");
 
-/** Loads an appointment with its patient, treatment and dentist; names in the patient's locale. */
+/** Loads an appointment with its contact, treatment and dentist; names in the booking's locale. */
 export async function loadAppointment(
   db: Db,
   where: { id: string } | { manageTokenHash: string },
@@ -39,6 +39,9 @@ export async function loadAppointment(
       during: entries.during,
       status: entries.status,
       kind: entries.kind,
+      cName: entries.contactName,
+      cEmail: entries.contactEmail,
+      cLocale: entries.contactLocale,
       pName: patients.name,
       pEmail: patients.email,
       pLocale: patients.locale,
@@ -55,14 +58,18 @@ export async function loadAppointment(
     .where("id" in where ? eq(entries.id, where.id) : eq(entries.manageTokenHash, where.manageTokenHash))
     .limit(1);
   if (!r || r.kind !== "appointment") return null;
-  const locale = asLocale(r.pLocale);
+  // Per-booking contact details win; rows without them (seeded, legacy) use the patient row.
+  // contact_name is always written with the others, so it marks whether they were recorded: a
+  // walk-in without an email must not fall back to an address typed for another booking.
+  const hasContact = r.cName !== null;
+  const locale = asLocale(hasContact ? (r.cLocale ?? r.pLocale) : r.pLocale);
   return {
     id: r.id,
     start: r.during.start,
     end: r.during.end,
     status: r.status,
     locale,
-    patient: { name: r.pName, email: r.pEmail },
+    patient: hasContact ? { name: r.cName!, email: r.cEmail } : { name: r.pName, email: r.pEmail },
     treatment: { slug: r.tSlug, nameEn: r.tEn, nameTr: r.tTr, name: locale === "tr" ? r.tTr : r.tEn },
     dentist: { slug: r.dSlug, name: r.dName },
   };

@@ -5,6 +5,8 @@ import { can } from "@/lib/auth/permissions";
 import type { Actor } from "@/lib/auth/roles";
 import { BookingError } from "@/lib/booking/errors";
 import { istanbulDateOf, istanbulTimeOf } from "@/lib/time";
+import { isDemo } from "@/lib/demo/mode";
+import { maskEmail, maskPhone } from "@/lib/demo/mask";
 
 export const PATIENT_LIMIT = 50;
 
@@ -25,7 +27,40 @@ export function fold(s: string): string {
 const foldSql = (col: SQL | { name: string }) =>
   sql`lower(translate(${col}, ${FROM}, ${TO}))`;
 
-export type PatientRow = { id: string; name: string; phone: string; email: string | null; upcoming: number; past: number };
+export type PatientRow = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  upcoming: number;
+  past: number;
+  /** Demo mode: phone and email are masked (another visitor's details). */
+  contactMasked: boolean;
+};
+
+/** Demo only: the visitor's own appointment ids (demo_mine cookie), which unmask contacts. */
+export type MaskOpts = { mine?: string[] };
+
+/**
+ * Demo mode: true when the patient has an online booking that is not this browser's, i.e. their
+ * stored phone and email may have been typed by another visitor. Live mode: always false.
+ */
+function foreignOnline(patientId: string | typeof patients.id, opts: MaskOpts): SQL<boolean> {
+  if (!isDemo()) return sql<boolean>`false`;
+  const mine = (opts.mine ?? []).filter((x) => UUID.test(x));
+  const notMine = mine.length ? sql`and ${entries.id}::text not in (${sql.join(mine.map((m) => sql`${m}`), sql`, `)})` : sql``;
+  // eq() (not a bare template) so drizzle qualifies the outer patients.id inside the subquery.
+  return sql<boolean>`exists (select 1 from ${entries} where ${eq(entries.patientId, patientId)} and ${entries.kind} = 'appointment' and ${entries.source} = 'online' ${notMine})`;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function masked<T extends { phone: string; email: string | null; masked: boolean }>(r: T): Omit<T, "masked"> & { contactMasked: boolean } {
+  const { masked: m, ...rest } = r;
+  return m
+    ? { ...rest, phone: maskPhone(r.phone), email: r.email ? maskEmail(r.email) : null, contactMasked: true }
+    : { ...rest, contactMasked: false };
+}
 
 const isOwn = (actor: Actor): actor is Actor & { dentistId: number } => actor.role === "dentist";
 
@@ -48,7 +83,13 @@ const apptScope = (actor: Actor, patientId: string | typeof patients.id) =>
  * Empty query lists everyone. Name order, at most PATIENT_LIMIT. Dentists get only patients who
  * have an appointment with them, with counts of their own appointments (cancelled ones excluded).
  */
-export async function searchPatients(db: DbOrTx, actor: Actor, q: string, now: Date = new Date()): Promise<PatientRow[]> {
+export async function searchPatients(
+  db: DbOrTx,
+  actor: Actor,
+  q: string,
+  now: Date = new Date(),
+  opts: MaskOpts = {},
+): Promise<PatientRow[]> {
   guard(actor);
   const term = fold(q.trim()).replace(/[\\%_]/g, (c) => `\\${c}`);
   const digits = q.replace(/\D/g, "").replace(/^0+/, "");
@@ -67,7 +108,7 @@ export async function searchPatients(db: DbOrTx, actor: Actor, q: string, now: D
     ? exists(db.select({ one: sql`1` }).from(entries).where(apptScope(actor, patients.id)))
     : undefined;
 
-  return db
+  const rows = await db
     .select({
       id: patients.id,
       name: patients.name,
@@ -75,11 +116,13 @@ export async function searchPatients(db: DbOrTx, actor: Actor, q: string, now: D
       email: patients.email,
       upcoming: upcoming.mapWith(Number),
       past: past.mapWith(Number),
+      masked: foreignOnline(patients.id, opts).mapWith(Boolean),
     })
     .from(patients)
     .where(and(text, scope))
     .orderBy(asc(foldSql(patients.name)), asc(patients.id))
     .limit(PATIENT_LIMIT);
+  return rows.map(masked);
 }
 
 export type PatientAppointment = {
@@ -100,12 +143,24 @@ export async function getPatientAppointments(
   actor: Actor,
   patientId: string,
   now: Date = new Date(),
-): Promise<{ patient: { id: string; name: string; phone: string; email: string | null }; upcoming: PatientAppointment[]; past: PatientAppointment[] }> {
+  opts: MaskOpts = {},
+): Promise<{
+  patient: { id: string; name: string; phone: string; email: string | null; contactMasked: boolean };
+  upcoming: PatientAppointment[];
+  past: PatientAppointment[];
+}> {
   guard(actor);
-  const [patient] = await db
-    .select({ id: patients.id, name: patients.name, phone: patients.phoneE164, email: patients.email })
+  const [raw] = await db
+    .select({
+      id: patients.id,
+      name: patients.name,
+      phone: patients.phoneE164,
+      email: patients.email,
+      masked: foreignOnline(patients.id, opts).mapWith(Boolean),
+    })
     .from(patients)
     .where(eq(patients.id, patientId));
+  const patient = raw ? masked(raw) : undefined;
   const rows = patient
     ? await db
         .select({

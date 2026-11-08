@@ -158,9 +158,15 @@ export default function AppointmentDialog({
             <div className={row}>
               <dt className="text-mute">{t("appt.phone")}</dt>
               <dd>
-                <a href={`tel:${entry.patientPhone}`} className="font-semibold text-brand underline-offset-2 hover:underline">
-                  {formatPhone(entry.patientPhone)}
-                </a>
+                {entry.contactMasked ? (
+                  <span data-testid="appt-phone" className="font-semibold text-ink">
+                    {entry.patientPhone} <span className="text-[12px] font-normal text-mute">({t("appt.phoneHidden")})</span>
+                  </span>
+                ) : (
+                  <a data-testid="appt-phone" href={`tel:${entry.patientPhone}`} className="font-semibold text-brand underline-offset-2 hover:underline">
+                    {formatPhone(entry.patientPhone)}
+                  </a>
+                )}
               </dd>
             </div>
           )}

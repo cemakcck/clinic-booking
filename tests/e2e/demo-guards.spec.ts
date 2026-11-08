@@ -2,9 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { and, eq, inArray } from "drizzle-orm";
 import { clinicHours, dentists, entries } from "@/lib/db/schema";
 import { snapshotCapacity } from "@/lib/demo/floor";
-import { atIstanbul, istanbulTimeOf, weekdayOf } from "@/lib/time";
+import { atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
 import { bookAnyCheckup } from "./helpers";
-import { deleteBlocksByNote, withDb } from "./calendar-db";
+import { deleteBlocksByNote, publicMinutesLeftToday, withDb } from "./calendar-db";
 
 // The demo capacity floor (spec §10): a receptionist trying to block out the next few days is
 // eventually refused, and a visitor can still book on each of those days.
@@ -13,12 +13,18 @@ const FLOOR_MESSAGE = "The demo keeps a few free times for other visitors";
 
 type Gap = { dentistId: number; from: string; to: string };
 
-/** Floor days that still have public capacity right now (today drops out once it's closed). */
+/**
+ * Floor days that still have public capacity right now. Today is left out when less than 90
+ * bookable minutes remain: its last slots slip inside the 2-hour lead while the test runs.
+ */
 async function floorDaysWithCapacity(): Promise<string[]> {
+  const now = new Date();
+  const today = istanbulDateOf(now);
+  const todayOk = (await publicMinutesLeftToday(now)) >= 90;
   return withDb(async (db) => {
-    const snap = await snapshotCapacity(db, new Date());
+    const snap = await snapshotCapacity(db, now);
     return Object.entries(snap)
-      .filter(([, n]) => n > 0)
+      .filter(([d, n]) => n > 0 && (d !== today || todayOk))
       .map(([d]) => d)
       .sort();
   });

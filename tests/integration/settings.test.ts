@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
-import { closedDates, entries, patients, treatments, workingHours } from "@/lib/db/schema";
+import { eq, inArray } from "drizzle-orm";
+import { closedDates, dentists, entries, patients, treatments, workingHours } from "@/lib/db/schema";
 import { closeTestDb, resetTables, seedFixture, T, testDb } from "./helpers/db";
 import type { Fixture } from "./helpers/fixture";
 import type { Actor } from "@/lib/auth/roles";
@@ -132,6 +132,60 @@ describe("settings", () => {
     });
     const [still] = await db.select().from(entries).where(eq(entries.id, e.id));
     expect(still.active).toBe(true);
+  });
+
+  it("deactivating a dentist with upcoming appointments is refused with the list", async () => {
+    const now = T("2026-11-10", "08:00");
+    const [p] = await db
+      .insert(patients)
+      .values({ name: "Patient Row", phoneE164: "+905320000002", email: "p@example.com", locale: "en" })
+      .returning({ id: patients.id });
+    const mk = async (date: string, from: string, to: string, extra: Partial<typeof entries.$inferInsert> = {}) =>
+      (
+        await db
+          .insert(entries)
+          .values({
+            dentistId: fx.dentists.ayd,
+            kind: "appointment",
+            during: { start: T(date, from), end: T(date, to) },
+            treatmentId: fx.treatments.checkup,
+            patientId: p.id,
+            status: "booked",
+            source: "online",
+            ...extra,
+          })
+          .returning({ id: entries.id })
+      )[0].id;
+    const future = await mk("2026-11-12", "10:00", "10:30", { contactName: "Typed Name" });
+    const legacy = await mk("2026-11-13", "10:00", "10:30");
+    await mk("2026-11-09", "10:00", "10:30"); // past: does not block
+    await mk("2026-11-12", "11:00", "11:30", { status: "cancelled", active: false }); // cancelled
+    await mk("2026-11-12", "12:00", "12:30", { status: "completed" }); // not booked any more
+
+    const input = {
+      id: fx.dentists.ayd, slug: "ayd", name: "Dr. Ayd", titleEn: "Dentist", titleTr: "Diş Hekimi",
+      bioEn: "", bioTr: "", sortOrder: 1, active: false,
+      treatmentIds: [fx.treatments.checkup],
+      hours: [1, 2, 3, 4, 5].map((weekday) => ({ weekday, start: "09:00", end: "18:00" })),
+    };
+    const err = await code(saveDentist(db, admin, input, now));
+    expect(err?.code).toBe("dentist_has_appointments");
+    expect(err?.details).toEqual({
+      appointments: [
+        { id: future, start: T("2026-11-12", "10:00").toISOString(), patientName: "Typed Name" },
+        { id: legacy, start: T("2026-11-13", "10:00").toISOString(), patientName: "Patient Row" },
+      ],
+    });
+    const [d] = await db.select().from(dentists).where(eq(dentists.id, fx.dentists.ayd));
+    expect(d.active).toBe(true);
+
+    // Other edits while staying active are fine.
+    await saveDentist(db, admin, { ...input, active: true, name: "Dr. Ayd R." }, now);
+
+    await db.update(entries).set({ status: "cancelled", active: false }).where(inArray(entries.id, [future, legacy]));
+    await saveDentist(db, admin, input, now);
+    const [after] = await db.select().from(dentists).where(eq(dentists.id, fx.dentists.ayd));
+    expect(after.active).toBe(false);
   });
 
   it("duration must be a multiple of 15", async () => {

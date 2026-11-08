@@ -133,6 +133,14 @@ export const entries = pgTable("entries", {
   holdTokenHash: text("hold_token_hash"),
   treatmentId: integer("treatment_id").references(() => treatments.id),
   patientId: uuid("patient_id").references(() => patients.id),
+  /**
+   * Contact details typed for this booking. The patient row is shared by phone number and only
+   * filled where empty, so these are what notifications and staff views use; null on seeded or
+   * legacy rows, which fall back to the patient row.
+   */
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  contactLocale: text("contact_locale"),
   status: apptStatus("status"),
   source: entrySource("source"),
   cancelledBy: cancelledBy("cancelled_by"),

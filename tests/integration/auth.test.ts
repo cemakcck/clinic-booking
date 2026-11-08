@@ -155,6 +155,10 @@ describe("Better Auth hardening (fix round 1)", () => {
       );
       expect(res.status, path).toBe(404);
     }
+    // GET endpoints too: listing sessions would expose other sessions' metadata.
+    expect(DISABLED_AUTH_PATHS).toContain("/list-sessions");
+    const list = await getAuth().handler(new Request("http://localhost:3000/api/auth/list-sessions"));
+    expect(list.status).toBe(404);
     const ok = await getAuth().handler(new Request("http://localhost:3000/api/auth/get-session"));
     expect(ok.status).toBe(200);
   });

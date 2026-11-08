@@ -193,6 +193,7 @@
     "treatment": "Tedavi (isteğe bağlı)",
     "treatmentNone": "Henüz emin değilim",
     "message": "Bilmemizi istediğiniz bir şey var mı? (isteğe bağlı)",
+    "privacyNote": "Bu herkese açık bir demo: deneyen diğer ziyaretçiler talepleri görebilir, bu yüzden uydurma bir isim kullanın. Veriler her gece silinir.",
     "submit": "Sizi arayalım",
     "sending": "Gönderiliyor...",
     "thanksTitle": "Teşekkürler, sizi arayacağız",
@@ -258,7 +259,7 @@
       "emailHint": "Onay ve randevu yönetim bağlantınız buraya gelir.",
       "language": "E-posta dili",
       "privacy": "Bilgilerimin bu randevuyu ayarlamak için kullanılmasını kabul ediyorum.",
-      "privacyNote": "Bu bir demodur. Bilgileriniz yalnızca bu randevu için kullanılır ve her gece silinir.",
+      "privacyNote": "Bu herkese açık bir demo: deneyen diğer ziyaretçiler randevuları görebilir, bu yüzden uydurma bir isim kullanın. Veriler her gece silinir.",
       "submit": "Randevuyu onayla",
       "submitting": "Kaydediliyor...",
       "held": "{time} boyunca sizin için ayrıldı",
@@ -493,6 +494,7 @@
         "dentist": "Hekim",
         "treatment": "Tedavi",
         "phone": "Telefon",
+        "phoneHidden": "demoda gizli",
         "status": "Durum",
         "statusActions": "Durumu değiştir",
         "arrived": "Geldi olarak işaretle",
@@ -580,6 +582,7 @@
       "noTreatment": "Belirtilmedi",
       "language": "Dil",
       "noMessage": "Mesaj yok.",
+      "hiddenInDemo": "Demoda gizli",
       "markContacted": "Arandı olarak işaretle",
       "markClosed": "Kapat",
       "reopen": "Yeni olarak işaretle",
@@ -683,7 +686,8 @@
         "works": "Çalışıyor",
         "start": "Başlangıç",
         "end": "Bitiş",
-        "notFound": "Böyle bir diş hekimi yok."
+        "notFound": "Böyle bir diş hekimi yok.",
+        "appointmentItem": "{name}, {when}"
       },
       "treatments": {
         "metaTitle": "Tedaviler",
@@ -752,6 +756,7 @@
         "forbidden": "Ayarları yalnızca yöneticiler değiştirebilir.",
         "demo_disabled": "Demoda devre dışı.",
         "not_found": "Bu artık yok. Lütfen geri dönüp sayfayı yenileyin.",
+        "dentist_has_appointments": "Bu hekimin hâlâ yaklaşan randevuları var. Önce bunları taşıyın:",
         "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
         "summary": "Lütfen vurgulanan alanları düzeltin."
       }

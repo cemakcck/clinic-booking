@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db, DbOrTx } from "@/lib/db/client";
 import { blockReason, entries, patients } from "@/lib/db/schema";
@@ -72,7 +72,7 @@ export function expandWeekly(first: Interval, repeat?: { count?: number; until?:
 /** Live appointments of the dentist overlapping any occurrence, one row per (appointment, occurrence). */
 async function findConflicts(tx: DbOrTx, dentistId: number, occ: Interval[]): Promise<BlockConflict[]> {
   const rows = await tx
-    .select({ id: entries.id, during: entries.during, patientName: patients.name })
+    .select({ id: entries.id, during: entries.during, patientName: sql<string | null>`coalesce(${entries.contactName}, ${patients.name})` })
     .from(entries)
     .leftJoin(patients, eq(patients.id, entries.patientId))
     .where(

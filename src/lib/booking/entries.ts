@@ -59,6 +59,10 @@ async function sweepExpiredHolds(tx: DbOrTx, dentistId: number, range: Interval,
  *     a dentist-locked transaction.
  *  3. No external I/O (email, HTTP) while a dentist lock is held; send after commit.
  *
+ * Exemption: releaseHold (holds.ts) deletes one hold row in a single autocommit statement with no
+ * dentist lock. It holds no lock before that row lock and takes none after it, so it can wait on
+ * a writer but never be part of a wait cycle; and freeing a slot cannot break the constraint.
+ *
  * Must run inside a transaction: on a bare connection the lock is released at once.
  * Re-taking a lock the transaction already holds is a no-op.
  */

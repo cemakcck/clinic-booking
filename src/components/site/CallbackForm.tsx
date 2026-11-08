@@ -98,8 +98,9 @@ export default function CallbackForm({
         <textarea id="cb-message" name="message" defaultValue={v?.message} rows={3} aria-invalid={!!errors.message} aria-describedby={errId("message")} className={field} />
         {fieldError("message")}
       </div>
+      <p id="cb-privacy-note" className="rounded-card bg-soft p-3 text-sm leading-relaxed text-ink">{t("privacyNote")}</p>
       <div>
-        <button type="submit" disabled={pending} className="rounded-card bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-ink disabled:opacity-70">
+        <button type="submit" disabled={pending} aria-describedby="cb-privacy-note" className="rounded-card bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-ink disabled:opacity-70">
           {pending ? t("sending") : t("submit")}
         </button>
       </div>

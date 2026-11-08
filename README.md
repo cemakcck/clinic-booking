@@ -161,7 +161,7 @@ npm run test:e2e    # Playwright: starts two dev servers, demo mode on :3200 and
 
 ## Clinic name check
 
-The name was checked so it doesn't belong to a real clinic. On 2026-11-08, web searches for "Lindenya diş kliniği İstanbul" and "Lindenya dental Istanbul" returned no result mentioning Lindenya, only unrelated clinics. Contact details use reserved, non-working values such as `.example` domains.
+The name was checked so it doesn't belong to a real clinic. On 2026-11-08, web searches for "Lindenya diş kliniği İstanbul" and "Lindenya dental Istanbul" returned no result mentioning Lindenya, only unrelated clinics. Contact details are placeholders too: the phone number (`+90 216 000 00 00`) is a non-assigned, all-zero number, the street address ("Lindenya Sokağı No: 1") is invented and labelled fictional, and the email uses the reserved `.example` domain.
 
 ## Before deploying
 

@@ -193,6 +193,7 @@
     "treatment": "Treatment (optional)",
     "treatmentNone": "Not sure yet",
     "message": "Anything we should know? (optional)",
+    "privacyNote": "This is a public demo: other visitors trying it can see requests, so use a made-up name. Data is wiped every night.",
     "submit": "Request a call back",
     "sending": "Sending...",
     "thanksTitle": "Thank you, we'll call you back",
@@ -258,7 +259,7 @@
       "emailHint": "Your confirmation and manage link go here.",
       "language": "Language for emails",
       "privacy": "I agree that my details are used to arrange this appointment.",
-      "privacyNote": "This is a demo. Your details are only used for this booking and are wiped every night.",
+      "privacyNote": "This is a public demo: other visitors trying it can see bookings, so use a made-up name. Data is wiped every night.",
       "submit": "Confirm booking",
       "submitting": "Booking...",
       "held": "Held for you for {time}",
@@ -493,6 +494,7 @@
         "dentist": "Dentist",
         "treatment": "Treatment",
         "phone": "Phone",
+        "phoneHidden": "hidden in the demo",
         "status": "Status",
         "statusActions": "Change status",
         "arrived": "Mark arrived",
@@ -580,6 +582,7 @@
       "noTreatment": "Not specified",
       "language": "Language",
       "noMessage": "No message.",
+      "hiddenInDemo": "Hidden in the demo",
       "markContacted": "Mark contacted",
       "markClosed": "Mark closed",
       "reopen": "Mark as new",
@@ -683,7 +686,8 @@
         "works": "Works",
         "start": "From",
         "end": "Until",
-        "notFound": "That dentist doesn't exist."
+        "notFound": "That dentist doesn't exist.",
+        "appointmentItem": "{name}, {when}"
       },
       "treatments": {
         "metaTitle": "Treatments",
@@ -752,6 +756,7 @@
         "forbidden": "Only admins can change settings.",
         "demo_disabled": "Disabled in the demo.",
         "not_found": "This no longer exists. Please go back and reload.",
+        "dentist_has_appointments": "This dentist still has upcoming appointments. Move these first:",
         "generic": "Something went wrong. Please try again.",
         "summary": "Please fix the highlighted fields."
       }

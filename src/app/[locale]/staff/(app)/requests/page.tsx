@@ -45,6 +45,7 @@ export default async function RequestsPage({ params, searchParams }: Props) {
     treatment: (locale === "tr" ? r.treatmentTr : r.treatmentEn) ?? null,
     message: r.message?.trim() ? r.message : null,
     status: r.status,
+    masked: r.masked,
   }));
 
   return (

@@ -15,6 +15,8 @@ export type RequestItem = {
   treatment: string | null;
   message: string | null;
   status: "new" | "contacted" | "closed";
+  /** Demo mode: phone masked, message withheld. */
+  masked?: boolean;
 };
 
 const CHIP: Record<RequestItem["status"], string> = {
@@ -74,16 +76,26 @@ export default function RequestsList({ items }: { items: RequestItem[] }) {
               <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
                 <dt className="text-mute">{t("phone")}</dt>
                 <dd>
-                  <a href={`tel:${it.phone}`} className="font-semibold text-brand underline">
-                    {it.phone}
-                  </a>
+                  {it.masked ? (
+                    <span className="font-semibold text-ink">{it.phone}</span>
+                  ) : (
+                    <a href={`tel:${it.phone}`} className="font-semibold text-brand underline">
+                      {it.phone}
+                    </a>
+                  )}
                 </dd>
                 <dt className="text-mute">{t("treatment")}</dt>
                 <dd className="text-ink">{it.treatment ?? t("noTreatment")}</dd>
                 <dt className="text-mute">{t("language")}</dt>
                 <dd className="text-ink">{it.language}</dd>
               </dl>
-              <p className="mt-2 text-sm text-ink">{it.message ?? <span className="text-mute">{t("noMessage")}</span>}</p>
+              <p className="mt-2 text-sm break-words whitespace-pre-wrap text-ink [overflow-wrap:anywhere]">
+                {it.masked ? (
+                  <span className="text-mute italic">{t("hiddenInDemo")}</span>
+                ) : (
+                  (it.message ?? <span className="text-mute">{t("noMessage")}</span>)
+                )}
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {it.status === "new" && (
                   <button type="button" className={btnPrimary} disabled={busy === it.id} onClick={() => change(it, "contacted")}>

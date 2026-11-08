@@ -128,3 +128,26 @@ test("@live: admin closes a date and the booking strip disables it", async ({ pa
     await expect(page.getByTestId("closed-dates")).toHaveCount(0);
   }
 });
+
+test("@live: deactivating a dentist with upcoming appointments lists them to move first", async ({ page }) => {
+  await liveAdmin(page);
+  await page.goto("/en/staff/settings/dentists");
+  await page.locator("main ul a").first().click();
+  const active = page.getByLabel("Active (shown on the website and bookable)");
+  await expect(active).toBeChecked();
+  // The seeded dentists all have upcoming appointments, so the save is refused and nothing changes.
+  await active.uncheck();
+  await page.getByRole("button", { name: "Save" }).click();
+  const alert = page.locator("main form").getByRole("alert");
+  await expect(alert).toBeFocused();
+  await expect(alert).toContainText("This dentist still has upcoming appointments. Move these first:");
+  const first = alert.getByTestId("dentist-appointments").getByRole("link").first();
+  await expect(first).toHaveAttribute("href", /\/en\/staff\/calendar\?view=day&date=\d{4}-\d{2}-\d{2}&open=[0-9a-f-]{36}$/);
+  await expect(active).not.toBeChecked();
+  await first.click();
+  await expect(page.getByTestId("calendar")).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.goBack();
+  await page.reload();
+  await expect(page.getByLabel("Active (shown on the website and bookable)")).toBeChecked();
+});

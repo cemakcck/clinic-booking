@@ -23,6 +23,7 @@ export const DISABLED_AUTH_PATHS = [
   "/reset-password",
   "/sign-up/email",
   "/sign-in/email",
+  "/list-sessions",
 ];
 
 function createAuth(database: Db) {

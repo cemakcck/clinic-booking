@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { btnGhost, btnPrimary, field, label } from "@/components/calendar/ui";
@@ -6,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { requireActor } from "@/lib/auth/actor";
 import { can } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
+import { MINE_COOKIE, parseMine } from "@/lib/demo/mine";
 import { BookingError } from "@/lib/booking/errors";
 import { PATIENT_LIMIT, getPatientAppointments, searchPatients, type PatientAppointment } from "@/lib/staff/patients";
 import { formatLongDate } from "@/lib/time";
@@ -38,9 +40,12 @@ export default async function PatientsPage({ params, searchParams }: Props) {
   const t = await getTranslations("staff.patients");
   const tc = await getTranslations("staff.calendar");
   const conn = await db();
-  const rows = await searchPatients(conn, actor, q);
+  // Demo: the visitor's own bookings unmask their own contact details (see lib/demo/mask).
+  const mine = parseMine((await cookies()).get(MINE_COOKIE)?.value);
+  const now = new Date();
+  const rows = await searchPatients(conn, actor, q, now, { mine });
   const detail = pid && UUID.test(pid)
-    ? await getPatientAppointments(conn, actor, pid).catch((e) => {
+    ? await getPatientAppointments(conn, actor, pid, now, { mine }).catch((e) => {
         if (e instanceof BookingError && e.code === "not_found") return null;
         throw e;
       })

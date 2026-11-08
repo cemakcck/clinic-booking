@@ -3,7 +3,7 @@ import { createDb, type Db } from "@/lib/db/client";
 import { callbackRequests, clinicHours, dentists, entries, patients, treatments } from "@/lib/db/schema";
 import { getDaySlots } from "@/lib/booking/availability";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
-import { DEMO_FLOOR } from "@/config/booking";
+import { DEMO_FLOOR, PUBLIC_MIN_LEAD_MIN } from "@/config/booking";
 
 /** The demo server's database (see playwright.config). */
 const URL = "postgres://clinic:clinic@localhost:5433/clinic_e2e";
@@ -15,6 +15,26 @@ export async function withDb<T>(fn: (db: Db) => Promise<T>): Promise<T> {
   } finally {
     await db.$client.end();
   }
+}
+
+/** Minutes left in the Istanbul day, for tests that need room "today" (they skip near midnight). */
+export function minutesLeftToday(now = new Date()): number {
+  const midnight = atIstanbul(addDays(istanbulDateOf(now), 1), "00:00");
+  return Math.floor((midnight.getTime() - now.getTime()) / 60_000);
+}
+
+/**
+ * Minutes of today's clinic hours still bookable online (after the public lead time); 0 when
+ * closed. Tests that book "today" skip it below a margin so they pass at any hour.
+ */
+export async function publicMinutesLeftToday(now = new Date()): Promise<number> {
+  return withDb(async (db) => {
+    const today = istanbulDateOf(now);
+    const [h] = await db.select().from(clinicHours).where(eq(clinicHours.weekday, weekdayOf(today)));
+    if (!h?.open || !h.close) return 0;
+    const from = Math.max(now.getTime() + PUBLIC_MIN_LEAD_MIN * 60_000, atIstanbul(today, h.open).getTime());
+    return Math.max(0, Math.floor((atIstanbul(today, h.close).getTime() - from) / 60_000));
+  });
 }
 
 /**
