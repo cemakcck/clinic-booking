@@ -171,6 +171,7 @@ export async function getDayStrip(
     days: number;
     now: Date;
     audience: Audience;
+    ignoreEntryId?: string;
   },
 ): Promise<{ date: string; available: boolean }[]> {
   const out: { date: string; available: boolean }[] = [];

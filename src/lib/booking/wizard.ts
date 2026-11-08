@@ -65,7 +65,7 @@ function dayLabels(date: string, locale: Locale) {
  */
 export async function loadDayData(
   db: DbOrTx,
-  q: { treatmentId: number; dentistId: number | "any"; date?: string; now: Date; locale: Locale },
+  q: { treatmentId: number; dentistId: number | "any"; date?: string; now: Date; locale: Locale; ignoreEntryId?: string },
 ): Promise<DayData> {
   const today = istanbulDateOf(q.now);
   const lastDay = addDays(today, PUBLIC_HORIZON_DAYS);
@@ -81,6 +81,7 @@ export async function loadDayData(
     days: STRIP_DAYS,
     now: q.now,
     audience: "public",
+    ignoreEntryId: q.ignoreEntryId,
   });
   const strip = raw.map((d) => ({ ...d, ...dayLabels(d.date, q.locale) }));
   if (!strip.find((d) => d.date === date)?.available) {
@@ -93,6 +94,7 @@ export async function loadDayData(
     date,
     now: q.now,
     audience: "public",
+    ignoreEntryId: q.ignoreEntryId,
   });
   const nextFrom = addDays(from, STRIP_DAYS);
   return {

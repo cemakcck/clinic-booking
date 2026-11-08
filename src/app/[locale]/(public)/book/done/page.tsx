@@ -36,6 +36,7 @@ export default async function DonePage({ params, searchParams }: Props) {
   const ts = await getTranslations("booking.summary");
   const treatment = locale === "tr" ? appt.treatment.nameTr : appt.treatment.nameEn;
   const firstName = appt.patient.name.split(" ")[0] ?? appt.patient.name;
+  const cancelled = appt.status === "cancelled";
   const row = "grid gap-0.5 border-b border-line py-3 sm:grid-cols-[8rem_1fr] sm:gap-4";
 
   return (
@@ -46,10 +47,10 @@ export default async function DonePage({ params, searchParams }: Props) {
             <path d="m5 12.5 4.5 4.5L19 7.5" />
           </svg>
         </span>
-        <p className="text-sm font-semibold text-brand">{t("kicker")}</p>
+        <p className="text-sm font-semibold text-brand">{cancelled ? t("cancelledKicker") : t("kicker")}</p>
       </div>
-      <h1 className="mt-4 text-4xl font-bold tracking-tight text-ink sm:text-5xl">{t("title")}</h1>
-      <p className="mt-3 text-lg text-mute">{t("lead", { name: firstName })}</p>
+      <h1 className="mt-4 text-4xl font-bold tracking-tight text-ink sm:text-5xl">{cancelled ? t("cancelledTitle") : t("title")}</h1>
+      <p className="mt-3 text-lg text-mute">{cancelled ? t("cancelledLead") : t("lead", { name: firstName })}</p>
 
       <section data-testid="confirmation" aria-labelledby="appt-title" className="mt-8 rounded-[18px] border border-line bg-white p-5 sm:p-6">
         <h2 id="appt-title" className="sr-only">{ts("title")}</h2>
@@ -74,6 +75,8 @@ export default async function DonePage({ params, searchParams }: Props) {
             <dd className="text-ink">{clinic.name}, {clinic.address}</dd>
           </div>
         </dl>
+        {!cancelled && (
+          <>
         <p className="mt-4 flex gap-2 rounded-card bg-soft p-3 text-sm text-ink">
           <svg aria-hidden="true" viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-brand" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -101,9 +104,11 @@ export default async function DonePage({ params, searchParams }: Props) {
           </Link>
         </div>
         <p className="mt-2 text-[13px] text-mute">{t("manageHint")}</p>
+          </>
+        )}
       </section>
 
-      {isDemo() && (
+      {isDemo() && !cancelled && (
         <aside data-testid="demo-callout" aria-labelledby="demo-callout-title" className="mt-6 rounded-[18px] bg-ink p-5 text-white sm:p-6">
           <h2 id="demo-callout-title" className="text-lg font-bold">{t("demoTitle")}</h2>
           <p className="mt-1 text-sm text-white/80">{t("demoBody")}</p>
