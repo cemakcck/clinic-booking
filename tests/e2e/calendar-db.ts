@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { createDb, type Db } from "@/lib/db/client";
-import { clinicHours, dentists, entries, patients, treatments } from "@/lib/db/schema";
+import { callbackRequests, clinicHours, dentists, entries, patients, treatments } from "@/lib/db/schema";
 import { getDaySlots } from "@/lib/booking/availability";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
 import { DEMO_FLOOR } from "@/config/booking";
@@ -299,3 +299,14 @@ export async function blocksByNote(note: string) {
 }
 
 export { atIstanbul };
+
+/** A new call-back request inserted directly; returns its id and a cleanup. */
+export async function addRequest(name: string) {
+  return withDb(async (db) => {
+    const [r] = await db
+      .insert(callbackRequests)
+      .values({ name, phoneE164: "+905325550123", locale: "en", message: "E2E request", ipHash: "e2e" })
+      .returning({ id: callbackRequests.id });
+    return { id: r.id, cleanup: () => withDb((d) => d.delete(callbackRequests).where(eq(callbackRequests.id, r.id))) };
+  });
+}

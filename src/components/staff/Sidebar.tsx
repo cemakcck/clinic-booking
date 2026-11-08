@@ -4,7 +4,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { LogoMark } from "@/components/site/Logo";
 import { signOut } from "@/app/[locale]/staff/login/actions";
 
-export type SidebarItem = { href: string; label: string };
+export type SidebarItem = { href: string; label: string; badge?: number };
 
 /** Staff sidebar (mockup screen 3). Items arrive already filtered by `can`. */
 export default function Sidebar({
@@ -43,6 +43,11 @@ export default function Sidebar({
                   } focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand`}
                 >
                   {it.label}
+                  {it.badge ? (
+                    <span data-testid="nav-badge" className="ml-1.5 rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">
+                      {it.badge}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             );
