@@ -175,8 +175,7 @@
       "mapPier": "Ferry pier",
       "mapSea": "Sea of Marmara",
       "callbackTitle": "Request a call back",
-      "callbackBody": "Leave your name and number and we'll call you back, usually the same working day.",
-      "callbackSoon": "Online call-back requests are on their way. Until then, call us on {phone} and we'll gladly help."
+      "callbackBody": "Leave your name and number and we'll call you back, usually the same working day."
     },
     "footer": {
       "tagline": "A small dental clinic in Moda, Kadıköy.",
@@ -185,6 +184,25 @@
       "hours": "Hours",
       "demoNote": "Lindenya is a fictional clinic, built as a portfolio demo. Names, addresses, phone numbers and reviews are invented.",
       "rights": "© {year} Lindenya Dental Clinic (fictional)"
+    }
+  },
+  "callback": {
+    "name": "Your name",
+    "phone": "Phone number",
+    "phoneHint": "For example 0532 111 22 33",
+    "treatment": "Treatment (optional)",
+    "treatmentNone": "Not sure yet",
+    "message": "Anything we should know? (optional)",
+    "submit": "Request a call back",
+    "sending": "Sending...",
+    "thanksTitle": "Thank you, we'll call you back",
+    "thanksBody": "Your request is with our team. We usually call the same working day.",
+    "errors": {
+      "name": "Please enter your name (2 to 80 characters).",
+      "phone": "Please enter a valid phone number, for example 0532 111 22 33.",
+      "message": "Your message is too long (1000 characters at most).",
+      "invalid": "Please check this field.",
+      "rate_limited": "Too many requests from your connection. Please try again later or call us."
     }
   }
 }

@@ -175,8 +175,7 @@
       "mapPier": "Vapur iskelesi",
       "mapSea": "Marmara Denizi",
       "callbackTitle": "Sizi arayalım",
-      "callbackBody": "Adınızı ve numaranızı bırakın, genellikle aynı iş günü içinde sizi arayalım.",
-      "callbackSoon": "Online geri arama talepleri çok yakında. O zamana kadar {phone} numarasından bize ulaşabilirsiniz."
+      "callbackBody": "Adınızı ve numaranızı bırakın, genellikle aynı iş günü içinde sizi arayalım."
     },
     "footer": {
       "tagline": "Moda, Kadıköy'de küçük bir diş kliniği.",
@@ -185,6 +184,25 @@
       "hours": "Saatler",
       "demoNote": "Lindenya hayali bir kliniktir ve bir portföy demosu olarak hazırlanmıştır. İsimler, adresler, telefon numaraları ve yorumlar uydurmadır.",
       "rights": "© {year} Lindenya Diş Kliniği (hayali)"
+    }
+  },
+  "callback": {
+    "name": "Adınız",
+    "phone": "Telefon numaranız",
+    "phoneHint": "Örneğin 0532 111 22 33",
+    "treatment": "Tedavi (isteğe bağlı)",
+    "treatmentNone": "Henüz emin değilim",
+    "message": "Bilmemizi istediğiniz bir şey var mı? (isteğe bağlı)",
+    "submit": "Sizi arayalım",
+    "sending": "Gönderiliyor...",
+    "thanksTitle": "Teşekkürler, sizi arayacağız",
+    "thanksBody": "Talebiniz ekibimize ulaştı. Genellikle aynı iş günü içinde arıyoruz.",
+    "errors": {
+      "name": "Lütfen adınızı girin (2 ile 80 karakter).",
+      "phone": "Lütfen geçerli bir telefon numarası girin, örneğin 0532 111 22 33.",
+      "message": "Mesajınız çok uzun (en fazla 1000 karakter).",
+      "invalid": "Lütfen bu alanı kontrol edin.",
+      "rate_limited": "Bağlantınızdan çok fazla talep geldi. Lütfen daha sonra tekrar deneyin veya bizi arayın."
     }
   }
 }

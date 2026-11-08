@@ -3,13 +3,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { clinic } from "@/config/clinic";
 import { db } from "@/lib/db/client";
-import { getOpeningHours } from "@/lib/public/queries";
+import { getOpeningHours, listTreatments } from "@/lib/public/queries";
 import { range, weekdayName } from "@/lib/public/hours";
 import PageHeader from "@/components/site/PageHeader";
+import CallbackForm from "@/components/site/CallbackForm";
 
-export const revalidate = 300;
-
-type Props = { params: Promise<{ locale: string }> };
+type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ treatment?: string | string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -62,11 +61,15 @@ function MapArt({ label, pier, sea, street }: { label: string; pier: string; sea
   );
 }
 
-export default async function ContactPage({ params }: Props) {
+export default async function ContactPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { treatment: tq } = await searchParams;
+  const treatment = Array.isArray(tq) ? tq[0] : tq;
   setRequestLocale(locale);
   const t = await getTranslations("public.contact");
-  const hours = await getOpeningHours(await db());
+  const conn = await db();
+  const hours = await getOpeningHours(conn);
+  const treatmentList = await listTreatments(conn, locale as Locale);
 
   return (
     <>
@@ -126,10 +129,7 @@ export default async function ContactPage({ params }: Props) {
         <div className="rounded-[22px] bg-soft p-8 sm:p-10">
           <h2 className="text-2xl font-bold text-ink">{t("callbackTitle")}</h2>
           <p className="mt-2 max-w-xl leading-relaxed text-mute">{t("callbackBody")}</p>
-          {/* Task 9 replaces this with the call-back form. */}
-          <p className="mt-6 max-w-xl rounded-card bg-white p-4 text-sm leading-relaxed text-ink ring-1 ring-line">
-            {t("callbackSoon", { phone: clinic.phoneDisplay })}
-          </p>
+          <CallbackForm treatments={treatmentList.map((x) => ({ slug: x.slug, name: x.name }))} defaultTreatment={treatment} />
         </div>
       </section>
     </>
