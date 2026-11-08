@@ -207,5 +207,102 @@
     "language": "Tercih ettiğiniz dil",
     "languageEn": "English",
     "languageTr": "Türkçe"
+  },
+  "booking": {
+    "metaTitle": "Randevu al",
+    "kicker": "Online randevu",
+    "title": "Randevu al",
+    "lead": "Dört kısa adım. Gördüğünüz her saat gerçekten boş ve İstanbul saatidir.",
+    "steps": {
+      "label": "Randevu adımları",
+      "treatment": "Tedavi",
+      "dentist": "Diş hekimi",
+      "time": "Saat",
+      "details": "Bilgileriniz",
+      "done": "tamamlandı",
+      "stepOf": "Adım {n} / 4"
+    },
+    "treatment": {
+      "title": "Ne için randevu almak istersiniz?",
+      "sub": "Emin değil misiniz? En iyi başlangıç bir muayenedir.",
+      "with": "{name} ile randevu. Hekimin tedavilerinden birini seçin.",
+      "minutes": "{count} dk"
+    },
+    "dentist": {
+      "title": "Hangi hekimi tercih edersiniz?",
+      "sub": "{treatment} tedavisini bu hekimler yapıyor.",
+      "anyone": "Fark etmez",
+      "anyoneHint": "Tüm boş saatleri görün, size uygun hekimi biz eşleştirelim.",
+      "notOffered": "{name} bu tedaviyi yapmıyor, lütfen başka bir hekim seçin."
+    },
+    "time": {
+      "title": "Saat seçin",
+      "sub": "Yalnızca gerçekten boş saatler gösterilir. Saatler İstanbul saatidir (GMT+3).",
+      "days": "Gün seçin",
+      "prev": "Önceki günler",
+      "next": "Sonraki günler",
+      "unavailable": "boş saat yok",
+      "slotsFor": "{day} için boş saatler",
+      "morning": "Sabah",
+      "afternoon": "Öğleden sonra",
+      "noSlots": "Bu günde boş saat yok. Başka bir gün deneyin.",
+      "noDays": "Bu günlerde boş saat yok. Sonraki günlere bakın ya da bizi arayın, size bir saat bulalım.",
+      "loading": "Boş saatler yükleniyor..."
+    },
+    "details": {
+      "title": "Bilgileriniz",
+      "name": "Ad soyad",
+      "phone": "Telefon numarası",
+      "phoneHint": "Örneğin 0532 111 22 33",
+      "email": "E-posta",
+      "emailHint": "Onay ve randevu yönetim bağlantınız buraya gelir.",
+      "language": "E-posta dili",
+      "privacy": "Bilgilerimin bu randevuyu ayarlamak için kullanılmasını kabul ediyorum.",
+      "privacyNote": "Bu bir demodur. Bilgileriniz yalnızca bu randevu için kullanılır ve her gece silinir.",
+      "submit": "Randevuyu onayla",
+      "submitting": "Kaydediliyor...",
+      "held": "{time} boyunca sizin için ayrıldı",
+      "heldExpired": "Ayırma süresi doldu. Şimdi onaylarsanız saat hâlâ boşsa sizin olur.",
+      "changeTime": "Saati değiştir"
+    },
+    "summary": {
+      "title": "Randevunuz",
+      "treatment": "Tedavi",
+      "dentist": "Diş hekimi",
+      "when": "Zaman",
+      "pricing": "Ücret",
+      "anyone": "Fark etmez",
+      "notChosen": "Henüz seçilmedi",
+      "tz": "İstanbul saati",
+      "continue": "Devam",
+      "holding": "Ayrılıyor...",
+      "holdNote": "Bilgilerinizi girerken saat 5 dakika boyunca sizin için ayrılır."
+    },
+    "errors": {
+      "slotGone": "Üzgünüz, bu saat artık boş değil. Lütfen başka bir saat seçin.",
+      "name": "Lütfen adınızı girin (2 ile 80 karakter).",
+      "phone": "Lütfen geçerli bir telefon numarası girin, örneğin 0532 111 22 33.",
+      "email": "Lütfen geçerli bir e-posta adresi girin.",
+      "privacy": "Devam etmek için lütfen kutuyu işaretleyin.",
+      "invalid": "Bir şeyler doğru görünmüyor. Lütfen bilgilerinizi kontrol edip tekrar deneyin.",
+      "rate_limited": "Bağlantınızdan çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin ya da bizi arayın.",
+      "generic": "Bir sorun oluştu. Lütfen tekrar deneyin ya da bizi arayın."
+    },
+    "done": {
+      "metaTitle": "Randevu onaylandı",
+      "kicker": "Randevu onaylandı",
+      "title": "Randevunuz alındı",
+      "lead": "Teşekkürler {name}. Sizi görmeyi dört gözle bekliyoruz.",
+      "emailed": "Size takvim dosyası ve randevu yönetim bağlantısı içeren bir onay e-postası gönderdik.",
+      "addToCalendar": "Takvime ekle",
+      "manage": "Randevunuzu yönetin",
+      "manageHint": "Randevudan 24 saat öncesine kadar saatini değiştirebilir ya da iptal edebilirsiniz.",
+      "where": "Yer",
+      "bookAnother": "Yeni randevu al",
+      "demoTitle": "Şimdi kliniğin tarafından bakın",
+      "demoBody": "Randevunuz resepsiyon takviminde şimdiden yer alıyor ve bu tarayıcı için vurgulanıyor.",
+      "demoCta": "Resepsiyonist olarak deneyin",
+      "demoSoon": "Personel ekranları demonun sonraki bir adımında açılacak."
+    }
   }
 }

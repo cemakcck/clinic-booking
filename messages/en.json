@@ -207,5 +207,102 @@
     "language": "Preferred language",
     "languageEn": "English",
     "languageTr": "Türkçe"
+  },
+  "booking": {
+    "metaTitle": "Book an appointment",
+    "kicker": "Online booking",
+    "title": "Book an appointment",
+    "lead": "Four short steps. Every time you see is genuinely free, in Istanbul time.",
+    "steps": {
+      "label": "Booking steps",
+      "treatment": "Treatment",
+      "dentist": "Dentist",
+      "time": "Time",
+      "details": "Your details",
+      "done": "done",
+      "stepOf": "Step {n} of 4"
+    },
+    "treatment": {
+      "title": "What would you like to book?",
+      "sub": "Not sure? A check-up is the best place to start.",
+      "with": "Booking with {name}. Pick one of their treatments.",
+      "minutes": "{count} min"
+    },
+    "dentist": {
+      "title": "Who would you like to see?",
+      "sub": "These dentists perform {treatment}.",
+      "anyone": "Anyone available",
+      "anyoneHint": "See every free time. We'll match you with a dentist.",
+      "notOffered": "{name} doesn't perform this treatment, so please choose another dentist."
+    },
+    "time": {
+      "title": "Pick a time",
+      "sub": "Only genuinely free times are shown. Times are Istanbul time (GMT+3).",
+      "days": "Choose a day",
+      "prev": "Earlier days",
+      "next": "Later days",
+      "unavailable": "no free times",
+      "slotsFor": "Free times on {day}",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "noSlots": "No free times on this day. Try another day.",
+      "noDays": "No free times in these days. Try later days, or call us and we'll find you a time.",
+      "loading": "Loading free times..."
+    },
+    "details": {
+      "title": "Your details",
+      "name": "Full name",
+      "phone": "Phone number",
+      "phoneHint": "For example 0532 111 22 33",
+      "email": "Email",
+      "emailHint": "Your confirmation and manage link go here.",
+      "language": "Language for emails",
+      "privacy": "I agree that my details are used to arrange this appointment.",
+      "privacyNote": "This is a demo. Your details are only used for this booking and are wiped every night.",
+      "submit": "Confirm booking",
+      "submitting": "Booking...",
+      "held": "Held for you for {time}",
+      "heldExpired": "Your hold has ended. Confirm now and we'll keep this time if it's still free.",
+      "changeTime": "Change time"
+    },
+    "summary": {
+      "title": "Your appointment",
+      "treatment": "Treatment",
+      "dentist": "Dentist",
+      "when": "When",
+      "pricing": "Price",
+      "anyone": "Anyone available",
+      "notChosen": "Not chosen yet",
+      "tz": "Istanbul time",
+      "continue": "Continue",
+      "holding": "Holding...",
+      "holdNote": "The time is held for you for 5 minutes while you fill in your details."
+    },
+    "errors": {
+      "slotGone": "Sorry, that time is no longer available. Please pick another one.",
+      "name": "Please enter your name (2 to 80 characters).",
+      "phone": "Please enter a valid phone number, for example 0532 111 22 33.",
+      "email": "Please enter a valid email address.",
+      "privacy": "Please tick the box to continue.",
+      "invalid": "Something didn't look right. Please check your details and try again.",
+      "rate_limited": "Too many attempts from your connection. Please try again later or call us.",
+      "generic": "Something went wrong. Please try again or call us."
+    },
+    "done": {
+      "metaTitle": "Booking confirmed",
+      "kicker": "Booking confirmed",
+      "title": "You're booked in",
+      "lead": "Thank you, {name}. We look forward to seeing you.",
+      "emailed": "We emailed you a confirmation with a calendar file and a link to manage your booking.",
+      "addToCalendar": "Add to calendar",
+      "manage": "Manage your booking",
+      "manageHint": "You can reschedule or cancel up to 24 hours before.",
+      "where": "Where",
+      "bookAnother": "Book another appointment",
+      "demoTitle": "Now see it from the clinic's side",
+      "demoBody": "Your booking is already in the receptionist's calendar, highlighted for this browser.",
+      "demoCta": "Try it as Receptionist",
+      "demoSoon": "Staff views open in a later step of the demo."
+    }
   }
 }
