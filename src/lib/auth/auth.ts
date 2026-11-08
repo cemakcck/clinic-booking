@@ -4,9 +4,38 @@ import { nextCookies } from "better-auth/next-js";
 import { sharedDb, type Db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
 
+/**
+ * Endpoints the HTTP router refuses (404). The demo accounts are shared by every visitor, so
+ * none may rename them, change their password/email, delete them or sign everyone out. Sign-in
+ * and sign-up happen only through our server actions (which apply our own rate limit; direct
+ * `auth.api` calls skip Better Auth's limiter), so the raw HTTP sign-in is closed too.
+ * /get-session and /sign-out stay open.
+ */
+export const DISABLED_AUTH_PATHS = [
+  "/update-user",
+  "/change-password",
+  "/change-email",
+  "/delete-user",
+  "/revoke-sessions",
+  "/revoke-other-sessions",
+  "/revoke-session",
+  "/request-password-reset",
+  "/reset-password",
+  "/sign-up/email",
+  "/sign-in/email",
+];
+
 function createAuth(database: Db) {
   return betterAuth({
     database: drizzleAdapter(database, { provider: "pg", schema }),
+    disabledPaths: DISABLED_AUTH_PATHS,
+    databaseHooks: {
+      session: {
+        // Privacy rule: IPs are stored only as HMAC hashes, so never keep the raw session IP.
+        create: { before: async (s) => ({ data: { ...s, ipAddress: null } }) },
+        update: { before: async (s) => ({ data: "ipAddress" in s ? { ...s, ipAddress: null } : s }) },
+      },
+    },
     // Accounts come from the seed and `npm run user:create` only (spec §7.1).
     emailAndPassword: { enabled: true, disableSignUp: true },
     user: {

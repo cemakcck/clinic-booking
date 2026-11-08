@@ -115,3 +115,47 @@ describe("newestMineDate (magic moment)", () => {
     expect(await newestMineDate(db, [row.id])).toBe("2026-11-12");
   });
 });
+
+describe("Better Auth hardening (fix round 1)", () => {
+  it("stores no raw IP on the session", async () => {
+    const { getAuth } = await import("@/lib/auth/auth");
+    const { session } = await import("@/lib/db/schema");
+    await resetDemo(db, NOW);
+    await getAuth().api.signInEmail({
+      body: { email: "zeynep@staff.example", password: process.env.DEMO_PASSWORD! },
+      headers: new Headers({ "x-forwarded-for": "203.0.113.7", "user-agent": "vitest" }),
+    });
+    const rows = await db.select().from(session);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].ipAddress ?? "").toBe("");
+  });
+
+  it("the HTTP router refuses account-changing and sign-in/up endpoints, keeps get-session", async () => {
+    const { getAuth, DISABLED_AUTH_PATHS } = await import("@/lib/auth/auth");
+    for (const path of [
+      "/update-user",
+      "/change-password",
+      "/change-email",
+      "/delete-user",
+      "/revoke-sessions",
+      "/revoke-other-sessions",
+      "/revoke-session",
+      "/request-password-reset",
+      "/reset-password",
+      "/sign-up/email",
+      "/sign-in/email",
+    ]) {
+      expect(DISABLED_AUTH_PATHS).toContain(path);
+      const res = await getAuth().handler(
+        new Request(`http://localhost:3000/api/auth${path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+          body: "{}",
+        }),
+      );
+      expect(res.status, path).toBe(404);
+    }
+    const ok = await getAuth().handler(new Request("http://localhost:3000/api/auth/get-session"));
+    expect(ok.status).toBe(200);
+  });
+});

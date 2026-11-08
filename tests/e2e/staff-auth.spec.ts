@@ -106,6 +106,30 @@ test("a signed-in visitor opening the login goes to their home", async ({ page }
   await expect(page).toHaveURL(/\/en\/staff\/today$/);
 });
 
+test("the shared demo account can't be renamed, re-passworded or mass-signed-out over the API", async ({ page }) => {
+  await page.goto("/en");
+  await banner(page).getByRole("button", { name: "Receptionist" }).click();
+  await expect(page).toHaveURL(/\/en\/staff\/calendar/);
+  const origin = "http://localhost:3200";
+  const post = (path: string, data: object) =>
+    page.request.post(`/api/auth${path}`, { data, headers: { origin } });
+  expect((await post("/update-user", { name: "Vandal" })).status()).toBe(404);
+  expect(
+    (await post("/change-password", { currentPassword: E2E_DEMO_PASSWORD, newPassword: "locked-you-out-123" })).status(),
+  ).toBe(404);
+  expect((await post("/revoke-sessions", {})).status()).toBe(404);
+  expect((await page.request.get("/api/auth/get-session")).status()).toBe(200);
+
+  await page.reload();
+  await expect(page.getByTestId("signed-in")).toContainText("Zeynep Arslan");
+  // The password still works for the next visitor.
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByLabel("Email").fill("zeynep@staff.example");
+  await page.getByLabel("Password").fill(E2E_DEMO_PASSWORD);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/staff\/calendar$/);
+});
+
 test("@live: no role pills; the form login with admin credentials works", async ({ page }) => {
   await page.goto("/en");
   await expect(page.getByRole("complementary", { name: "Demo notice" })).toHaveCount(0);

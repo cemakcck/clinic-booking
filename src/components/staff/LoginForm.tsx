@@ -23,7 +23,7 @@ export default function LoginForm() {
 
   const missing = state.error === "missing";
   const emailInvalid = missing && !state.email;
-  const passwordInvalid = state.error !== null && !emailInvalid;
+  const passwordInvalid = missing && !emailInvalid;
 
   return (
     <form ref={formRef} key={JSON.stringify(state)} action={action} noValidate className="mt-6 grid gap-4">
@@ -48,14 +48,14 @@ export default function LoginForm() {
       </div>
       <div>
         <label htmlFor="login-password" className={label}>{t("password")}</label>
-        {/* Focus the password only when it is the empty field; a wrong pair focuses the alert. */}
+        {/* Focus the password only when it is the empty field; a wrong pair or the rate limit focuses the alert. */}
         <input
           id="login-password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          aria-invalid={missing && passwordInvalid}
+          aria-invalid={passwordInvalid}
           aria-describedby={state.error ? "login-error" : undefined}
           className={field}
         />

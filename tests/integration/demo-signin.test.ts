@@ -10,12 +10,13 @@ import { closeTestDb, testDb, TEST_DATABASE_URL } from "./helpers/db";
 const h = vi.hoisted(() => ({
   signInEmail: vi.fn<(arg: unknown) => Promise<{ user: object }>>(async () => ({ user: {} })),
   cookie: undefined as string | undefined,
+  ip: "198.51.100.1",
 }));
 
 vi.mock("@/lib/auth/auth", () => ({ getAuth: () => ({ api: { signInEmail: h.signInEmail } }) }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "en" }));
 vi.mock("next/headers", () => ({
-  headers: async () => new Headers(),
+  headers: async () => new Headers({ "x-forwarded-for": h.ip }),
   cookies: async () => ({ get: () => (h.cookie ? { value: h.cookie } : undefined) }),
 }));
 vi.mock("next/navigation", () => ({
@@ -30,7 +31,8 @@ vi.mock("next/navigation", () => ({
 process.env.DATABASE_URL = TEST_DATABASE_URL;
 const NOW = new Date("2026-11-10T08:00:00+03:00");
 const db = testDb();
-const { demoSignIn } = await import("@/app/[locale]/staff/login/actions");
+const { demoSignIn, signIn } = await import("@/app/[locale]/staff/login/actions");
+const { APIError } = await import("better-auth/api");
 
 let mineId: string;
 let mineDate: string;
@@ -88,5 +90,40 @@ describe("demoSignIn", () => {
     for (const evil of ["//evil.example/en/staff", "https://evil.example", "/en/book", "/en/staff/../x"]) {
       await expect(demoSignIn("admin", evil)).rejects.toThrow(/^REDIRECT \/en\/staff\/calendar$/);
     }
+  });
+});
+
+describe("signIn rate limit", () => {
+  const form = (email: string, password: string) => {
+    const f = new FormData();
+    f.set("email", email);
+    f.set("password", password);
+    return f;
+  };
+  const initial = { error: null, email: "" };
+
+  it("refuses the 11th attempt from one IP within 15 minutes, keeping the email; other IPs are unaffected", async () => {
+    await resetDemo(db, NOW); // clears rate_events
+    h.signInEmail.mockImplementation(async () => {
+      throw new APIError("UNAUTHORIZED", { message: "Invalid email or password" });
+    });
+    h.ip = "198.51.100.23";
+    for (let i = 0; i < 10; i++) {
+      expect(await signIn(initial, form("zeynep@staff.example", `guess-${i}`))).toEqual({
+        error: "invalid",
+        email: "zeynep@staff.example",
+      });
+    }
+    expect(h.signInEmail).toHaveBeenCalledTimes(10);
+    expect(await signIn(initial, form("zeynep@staff.example", "guess-10"))).toEqual({
+      error: "rateLimited",
+      email: "zeynep@staff.example",
+    });
+    expect(h.signInEmail).toHaveBeenCalledTimes(10); // never reached Better Auth
+
+    h.ip = "198.51.100.24";
+    expect((await signIn(initial, form("zeynep@staff.example", "x-other-ip"))).error).toBe("invalid");
+    h.signInEmail.mockReset();
+    h.signInEmail.mockImplementation(async () => ({ user: {} }));
   });
 });

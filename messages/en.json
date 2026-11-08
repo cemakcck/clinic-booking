@@ -374,7 +374,8 @@
       "demoTitle": "Demo accounts",
       "demoBody": "One click signs you in as a seeded staff member. Admin settings are view-only in the demo.",
       "demoAs": "Sign in as {role}",
-      "backToSite": "Back to the website"
+      "backToSite": "Back to the website",
+      "rateLimited": "Too many sign-in attempts. Please wait 15 minutes and try again."
     },
     "placeholder": {
       "calendarTitle": "Calendar",

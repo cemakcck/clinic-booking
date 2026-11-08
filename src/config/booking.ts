@@ -12,4 +12,6 @@ export const RATE = {
   hold: [20, 3_600_000],
   confirm: [10, 3_600_000],
   callback: [5, 3_600_000],
+  /** Staff sign-in attempts per IP hash: 10 per 15 minutes. */
+  signin: [10, 900_000],
 } as const;

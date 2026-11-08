@@ -374,7 +374,8 @@
       "demoTitle": "Demo hesapları",
       "demoBody": "Tek tıkla örnek bir personel hesabıyla giriş yapın. Demoda yönetici ayarları yalnızca görüntülenebilir.",
       "demoAs": "{role} olarak giriş yap",
-      "backToSite": "Web sitesine dön"
+      "backToSite": "Web sitesine dön",
+      "rateLimited": "Çok fazla giriş denemesi yapıldı. Lütfen 15 dakika bekleyip tekrar deneyin."
     },
     "placeholder": {
       "calendarTitle": "Takvim",
