@@ -8,11 +8,13 @@ export default function SlotGrid({
   slots,
   dayLabel,
   selected,
+  disabled = false,
   onPick,
 }: {
   slots: SlotView[];
   dayLabel: string;
   selected: string | null;
+  disabled?: boolean;
   onPick: (start: string) => void;
 }) {
   const t = useTranslations("booking.time");
@@ -37,8 +39,9 @@ export default function SlotGrid({
                     type="button"
                     data-testid="slot"
                     aria-pressed={on}
+                    disabled={disabled}
                     onClick={() => onPick(s.start)}
-                    className={`min-w-[4.5rem] rounded-card border-[1.5px] px-3.5 py-2.5 text-sm font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                    className={`min-w-[4.5rem] rounded-card border-[1.5px] px-3.5 py-2.5 text-sm font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-wait ${
                       on ? "border-brand bg-brand text-white" : "border-line bg-white text-ink hover:border-brand hover:bg-soft"
                     }`}
                   >

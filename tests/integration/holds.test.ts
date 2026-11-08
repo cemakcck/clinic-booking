@@ -5,7 +5,7 @@ import { closeTestDb, resetTables, seedFixture, T, testDb, NOW_ISO } from "./hel
 import type { Fixture } from "./helpers/fixture";
 import { getDaySlots } from "@/lib/booking/availability";
 import { BookingError } from "@/lib/booking/errors";
-import { confirmBooking, placeHold } from "@/lib/booking/holds";
+import { confirmBooking, placeHold, releaseHold } from "@/lib/booking/holds";
 import { hashToken } from "@/lib/security/tokens";
 
 const db = testDb();
@@ -185,5 +185,38 @@ describe("confirm", () => {
     const ps = await db.select().from(patients);
     expect(ps).toHaveLength(1);
     expect(ps[0].name).toBe("Çağlar O.");
+  });
+});
+
+describe("releaseHold", () => {
+  const slots11 = async () =>
+    (
+      await getDaySlots(db, { treatmentId: fx.treatments.checkup, dentistId: fx.dentists.ayd, date: D, now, audience: "public" })
+    ).map((x) => x.start.getTime());
+
+  it("releaseHold frees the slot", async () => {
+    const h = await hold();
+    expect(await slots11()).not.toContain(T(D, "11:00").getTime());
+    await releaseHold(db, { holdId: h.holdId, holdToken: h.holdToken });
+    expect(await slots11()).toContain(T(D, "11:00").getTime());
+    // The same patient can hold it again straight away.
+    await expect(hold()).resolves.toMatchObject({ dentistId: fx.dentists.ayd });
+  });
+
+  it("releaseHold with a wrong token does nothing", async () => {
+    const h = await hold();
+    await releaseHold(db, { holdId: h.holdId, holdToken: "wrong-token-wrong-token-wrong" });
+    expect(await db.select().from(entries).where(eq(entries.id, h.holdId))).toHaveLength(1);
+    expect(await slots11()).not.toContain(T(D, "11:00").getTime());
+    // Malformed ids are a no-op, not a database error.
+    await expect(releaseHold(db, { holdId: "not-a-uuid", holdToken: h.holdToken })).resolves.toBeUndefined();
+  });
+
+  it("releaseHold never deletes an appointment", async () => {
+    const h = await hold();
+    await confirm(h);
+    await releaseHold(db, { holdId: h.holdId, holdToken: h.holdToken });
+    const [row] = await db.select().from(entries).where(eq(entries.id, h.holdId));
+    expect(row).toMatchObject({ kind: "appointment", status: "booked", active: true });
   });
 });

@@ -38,7 +38,7 @@ export default function StepTime({
       </p>
       <div aria-busy={loading} className={loading ? "opacity-60 transition-opacity" : ""}>
         {day.slots.length > 0 ? (
-          <SlotGrid slots={day.slots} dayLabel={current?.long ?? day.date} selected={selected} onPick={onPickSlot} />
+          <SlotGrid slots={day.slots} dayLabel={current?.long ?? day.date} selected={selected} disabled={loading} onPick={onPickSlot} />
         ) : (
           <p className="mt-6 rounded-card bg-soft p-4 text-sm text-ink">{anyDay ? t("noSlots") : t("noDays")}</p>
         )}

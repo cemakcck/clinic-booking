@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { confirm, holdSlot, loadDay } from "@/app/[locale]/(public)/book/actions";
+import { confirm, holdSlot, loadDay, releaseSlot } from "@/app/[locale]/(public)/book/actions";
 import { Link } from "@/i18n/navigation";
 import StepTreatment from "./StepTreatment";
 import StepDentist from "./StepDentist";
@@ -113,6 +113,29 @@ export default function Wizard(props: WizardProps) {
     });
   }
 
+  /**
+   * Back from step 4: give the hold back, reload the day, and only then show step 3, so the same
+   * time is offered (and holdable) again and no late reload can wipe a fresh selection.
+   */
+  function backToTime() {
+    if (!hold || submitting || loadingDay || !treatment || !dentist) return;
+    const h = hold;
+    const date = day?.date ?? "";
+    setNotice(null);
+    startDay(async () => {
+      await releaseSlot({ holdId: h.holdId, holdToken: h.holdToken });
+      const r = await loadDay({ locale, treatment: treatment.slug, dentist, date });
+      startDay(() => {
+        if (r.ok) {
+          setDay(r);
+          syncUrl(r.date);
+        }
+        setSelected(null);
+        setHold(null);
+      });
+    });
+  }
+
   function submit() {
     if (!hold || submitting) return;
     startSubmit(async () => {
@@ -147,7 +170,7 @@ export default function Wizard(props: WizardProps) {
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
       <div className="min-w-0">
-        <Steps step={step} treatment={treatment?.slug ?? null} dentist={dentist} onBackToTime={() => setHold(null)} />
+        <Steps step={step} treatment={treatment?.slug ?? null} dentist={dentist} onBackToTime={backToTime} />
         {heading}
         {step === 1 && <StepTreatment treatments={props.treatments} preDentist={props.preDentist} />}
         {step === 2 && treatment && <StepDentist treatment={treatment} notOffered={props.notOffered} />}
@@ -158,7 +181,7 @@ export default function Wizard(props: WizardProps) {
             loading={loadingDay}
             notice={notice}
             onPickDay={pickDay}
-            onPickSlot={setSelected}
+            onPickSlot={(start) => !loadingDay && setSelected(start)}
           />
         )}
         {step === 4 && hold && (
@@ -169,7 +192,7 @@ export default function Wizard(props: WizardProps) {
             errors={fieldErrors}
             submitting={submitting}
             onSubmit={submit}
-            onBack={() => setHold(null)}
+            onBack={backToTime}
           />
         )}
       </div>

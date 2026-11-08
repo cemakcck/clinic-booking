@@ -212,3 +212,17 @@ export async function confirmBooking(
     return result(manageToken, true);
   });
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Lets a patient give back their own hold (e.g. "Change time"), so the slot is free again at
+ * once. Deletes only a row that is still a hold and matches the token; anything else, including
+ * an appointment made from that hold, is left untouched.
+ */
+export async function releaseHold(db: Db, q: { holdId: string; holdToken: string }): Promise<void> {
+  if (typeof q.holdId !== "string" || !UUID_RE.test(q.holdId) || typeof q.holdToken !== "string" || !q.holdToken) return;
+  await db
+    .delete(entries)
+    .where(and(eq(entries.id, q.holdId), eq(entries.kind, "hold"), eq(entries.holdTokenHash, hashToken(q.holdToken))));
+}

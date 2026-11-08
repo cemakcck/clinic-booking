@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { BookingError, type BookingErrorCode } from "@/lib/booking/errors";
-import { confirmBooking, placeHold } from "@/lib/booking/holds";
+import { confirmBooking, placeHold, releaseHold } from "@/lib/booking/holds";
 import { normalizePhone } from "@/lib/booking/patients";
 import { notifyPatient } from "@/lib/booking/notify";
 import { loadDayData, resolveSelection, type DayData } from "@/lib/booking/wizard";
@@ -89,6 +89,14 @@ export async function holdSlot(input: {
   } catch (e) {
     return toFail(e);
   }
+}
+
+/** The patient gives back their own hold ("Change time"). Silently a no-op for anything else. */
+export async function releaseSlot(input: { holdId: string; holdToken: string }): Promise<{ ok: true }> {
+  if (typeof input?.holdId === "string" && typeof input?.holdToken === "string") {
+    await releaseHold(await db(), { holdId: input.holdId, holdToken: input.holdToken });
+  }
+  return { ok: true };
 }
 
 const detailsSchema = z.object({

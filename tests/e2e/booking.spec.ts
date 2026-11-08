@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 // Rate limits are per IP bucket and every Playwright request shares one: this file places at most
-// 7 holds (limit 20/h) and 2 confirms (limit 10/h) per run. globalSetup wipes rate_events.
+// 9 holds (limit 20/h) and 2 confirms (limit 10/h) per run. globalSetup wipes rate_events.
 
 const PRICE = /\d+\s?(₺|TL)\b|₺/;
 const email = () => `e2e+${Math.random().toString(36).slice(2, 10)}@example.com`;
@@ -111,6 +111,20 @@ test("dentist link preselects the dentist after a treatment they perform", async
   await page.getByTestId("treatment-option").filter({ hasText: "Teeth whitening" }).click();
   await expect(page.getByRole("heading", { name: "Who would you like to see?" })).toBeVisible();
   await expect(page.getByTestId("dentist-option").filter({ hasText: "Dr. Murat Kaya" })).toHaveCount(0);
+});
+
+test("change time releases the hold so the same slot can be taken again", async ({ page }) => {
+  await page.goto("/en/book?treatment=checkup&dentist=selin-demir");
+  const first = await toDetails(page);
+  await page.getByRole("button", { name: "Change time" }).click();
+  await expect(page.getByRole("heading", { name: "Pick a time" })).toBeFocused();
+  const again = page.getByTestId("slot").filter({ hasText: new RegExp(`^${first.label}$`) });
+  await expect(again).toHaveCount(1);
+  await again.click();
+  await page.getByTestId("summary").getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("heading", { name: "Your details" })).toBeFocused();
+  await expect(page.getByText("no longer available")).toHaveCount(0);
+  await expect(page.getByTestId("summary")).toContainText(first.label);
 });
 
 test("required fields and privacy checkbox are validated", async ({ page }) => {
