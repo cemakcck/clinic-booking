@@ -14,9 +14,9 @@
     "test:e2e": "playwright test",
     "db:up": "docker compose up -d --wait 2>/dev/null || docker-compose up -d --wait",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx scripts/seed.ts",
-    "demo:reset": "tsx scripts/demo-reset.ts",
+    "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
+    "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
+    "demo:reset": "tsx --env-file-if-exists=.env.local scripts/reset-demo.ts",
     "user:create": "tsx scripts/create-user.ts"
   },
   "dependencies": {
