@@ -1,10 +1,7 @@
 {
   "metadata": {
-    "title": "Clinic Booking",
-    "description": "Book your appointment online."
-  },
-  "home": {
-    "title": "Book your appointment"
+    "title": "Lindenya Dental Clinic · Kadıköy, Istanbul",
+    "description": "A calm dental clinic in Moda, Kadıköy. See real free times and book online in English or Turkish."
   },
   "language": {
     "label": "Language",
@@ -34,6 +31,160 @@
     "cancelled": {
       "subject": "Your appointment has been cancelled",
       "intro": "Your appointment has been cancelled. You are welcome to book a new time whenever suits you."
+    }
+  },
+  "public": {
+    "nav": {
+      "main": "Main",
+      "mobile": "Mobile",
+      "home": "Lindenya Dental Clinic, home",
+      "treatments": "Treatments",
+      "dentists": "Our dentists",
+      "international": "International patients",
+      "contact": "Contact",
+      "book": "Book appointment",
+      "menu": "Menu",
+      "skip": "Skip to content"
+    },
+    "demo": {
+      "region": "Demo notice",
+      "label": "Demo, not a real clinic",
+      "tryAs": "Try it as:",
+      "patient": "Patient",
+      "receptionist": "Receptionist",
+      "dentist": "Dentist",
+      "soon": "Staff views open in a later step of the demo",
+      "resets": "Data resets nightly at 03:00"
+    },
+    "pricing": {
+      "note": "Pricing: contact the clinic for a quote",
+      "body": "Every mouth is different, so we give you a clear quote after a short chat or check-up. No surprises.",
+      "call": "Call {phone}",
+      "callback": "Request a call back",
+      "callShort": "Call"
+    },
+    "slot": {
+      "label": "Next free slot",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "when": "{day}, {time}",
+      "with": "with {name}",
+      "tz": "Istanbul time",
+      "none": "Call us and we'll find you a time.",
+      "book": "Book a time"
+    },
+    "home": {
+      "metaTitle": "Dental clinic in Kadıköy, Istanbul",
+      "eyebrow": "Dental clinic in Moda, Kadıköy",
+      "title": "A calmer way to <em>care for your smile</em> in Istanbul.",
+      "lead": "Check-ups, whitening, implants and aligners with four dentists who take the time to explain. See a real free time and book online in under a minute.",
+      "seeTreatments": "See treatments",
+      "trustRating": "4.9★",
+      "trustRatingLabel": "reviews (demo)",
+      "trustDentistsLabel": "dentists",
+      "trustLanguages": "EN · TR",
+      "trustLanguagesLabel": "spoken",
+      "artLabel": "Illustration of a tooth with a linden leaf",
+      "treatmentsKicker": "What we do",
+      "treatmentsTitle": "Treatments, with honest timings",
+      "treatmentsLead": "Every treatment shows how long it takes, so you can plan the rest of your day.",
+      "allTreatments": "All treatments",
+      "dentistsKicker": "The team",
+      "dentistsTitle": "Four dentists, one calm clinic",
+      "dentistsLead": "Small enough to remember your name, broad enough to cover the whole family.",
+      "allDentists": "Meet all dentists",
+      "reviewsKicker": "Patients",
+      "reviewsTitle": "What patients say",
+      "reviewsTag": "Demo reviews, written for this showcase",
+      "review1": "I've avoided dentists for years. Dr. Aydın explained every step and it was over before I knew it.",
+      "review1Name": "Ayşe K., Moda",
+      "review2": "Booked from London on Sunday night, saw Dr. Kaya on Tuesday morning. Everything in English, no fuss.",
+      "review2Name": "Daniel B., visiting",
+      "review3": "My son actually asked when he can go back. That has never happened before.",
+      "review3Name": "Zeynep Ç., Kadıköy",
+      "intlTitle": "Visiting Istanbul?",
+      "intlBody": "Our whole team speaks English. Book before you fly, and every time you see is Istanbul time.",
+      "intlLink": "Booking from abroad",
+      "ctaTitle": "Ready when you are",
+      "ctaBody": "Pick a time that suits you, or give us a call and we'll help you choose."
+    },
+    "treatments": {
+      "metaTitle": "Treatments",
+      "kicker": "Treatments",
+      "title": "Care for every stage of your smile",
+      "lead": "Seven treatments, each with a clear duration. Not sure which one you need? Book a check-up and we'll guide you from there.",
+      "minutes": "{count} min",
+      "duration": "Duration",
+      "details": "Details",
+      "detailsFor": "Details: {name}",
+      "book": "Book this treatment",
+      "who": "Who performs it",
+      "back": "All treatments",
+      "visitTitle": "Your visit",
+      "visit1Title": "Book online",
+      "visit1": "Choose a free time that suits you. You'll get a confirmation email straight away.",
+      "visit2Title": "Arrive ten minutes early",
+      "visit2": "We'll go through your health history over a cup of tea, never in a rush.",
+      "visit3Title": "Leave with a plan",
+      "visit3": "Your dentist explains what they found and what comes next, in plain words."
+    },
+    "dentists": {
+      "metaTitle": "Our dentists",
+      "kicker": "Our dentists",
+      "title": "The people behind Lindenya",
+      "lead": "Four dentists with different specialties, sharing one way of working: explain first, treat gently, follow up.",
+      "performs": "Treatments",
+      "bookWith": "Book with {name}"
+    },
+    "international": {
+      "metaTitle": "International patients",
+      "kicker": "International patients",
+      "title": "Visiting Kadıköy from abroad",
+      "lead": "Whether you live here or are in town for a week, booking with us works the same way: online, in English, with real free times.",
+      "englishTitle": "An English-speaking team",
+      "englishBody": "Every dentist and our front desk speak English, and Turkish of course. Your emails and reminders come in the language you book in.",
+      "timeTitle": "All times are Istanbul time",
+      "timeBody": "The times you see are Istanbul time (GMT+3, all year round), wherever you are booking from.",
+      "quoteTitle": "A quote before treatment",
+      "quoteBody": "We never start work without agreeing a plan and a quote with you first.",
+      "stepsTitle": "How booking from abroad works",
+      "step1Title": "Pick a treatment and a time",
+      "step1": "Choose online. If you're unsure, a check-up is the best place to start.",
+      "step2Title": "Get your confirmation",
+      "step2": "You receive an email with a calendar file and a link to change or cancel.",
+      "step3Title": "Plans change? No problem",
+      "step3": "Use the link in your email to move or cancel up to 24 hours before.",
+      "step4Title": "Find us in Moda",
+      "step4": "We're a short walk from the Kadıköy ferry pier.",
+      "gettingTitle": "Getting here",
+      "gettingBody": "Kadıköy is on the Asian side of Istanbul. Ferries run from Karaköy and Eminönü, and the Marmaray line stops at Ayrılık Çeşmesi nearby. From the pier, follow Moda Caddesi south for about ten minutes."
+    },
+    "contact": {
+      "metaTitle": "Contact",
+      "kicker": "Contact",
+      "title": "Come and see us in Moda",
+      "lead": "Call, write or drop by. If you'd rather we call you, leave your number below.",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "hours": "Opening hours",
+      "closed": "Closed",
+      "lunch": "Closed for lunch {start}–{end}",
+      "mapLabel": "Illustrated map showing the clinic on Moda Caddesi, near the Kadıköy ferry pier",
+      "mapNote": "Illustration, not to scale",
+      "mapPier": "Ferry pier",
+      "mapSea": "Sea of Marmara",
+      "callbackTitle": "Request a call back",
+      "callbackBody": "Leave your name and number and we'll call you back, usually the same working day.",
+      "callbackSoon": "Online call-back requests are on their way. Until then, call us on {phone} and we'll gladly help."
+    },
+    "footer": {
+      "tagline": "A small dental clinic in Moda, Kadıköy.",
+      "visit": "Visit",
+      "explore": "Explore",
+      "hours": "Hours",
+      "demoNote": "Lindenya is a fictional clinic, built as a portfolio demo. Names, addresses, phone numbers and reviews are invented.",
+      "rights": "© {year} Lindenya Dental Clinic (fictional)"
     }
   }
 }

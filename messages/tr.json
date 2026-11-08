@@ -1,10 +1,7 @@
 {
   "metadata": {
-    "title": "Klinik Randevu",
-    "description": "Randevunuzu çevrimiçi alın."
-  },
-  "home": {
-    "title": "Randevunuzu alın"
+    "title": "Lindenya Diş Kliniği · Kadıköy, İstanbul",
+    "description": "Moda, Kadıköy'de sakin bir diş kliniği. Gerçek boş saatleri görün, Türkçe ya da İngilizce online randevu alın."
   },
   "language": {
     "label": "Dil",
@@ -34,6 +31,160 @@
     "cancelled": {
       "subject": "Randevunuz iptal edildi",
       "intro": "Randevunuz iptal edildi. Size uygun olduğunda yeni bir randevu alabilirsiniz."
+    }
+  },
+  "public": {
+    "nav": {
+      "main": "Ana menü",
+      "mobile": "Mobil menü",
+      "home": "Lindenya Diş Kliniği, ana sayfa",
+      "treatments": "Tedaviler",
+      "dentists": "Hekimlerimiz",
+      "international": "Uluslararası hastalar",
+      "contact": "İletişim",
+      "book": "Randevu al",
+      "menu": "Menü",
+      "skip": "İçeriğe geç"
+    },
+    "demo": {
+      "region": "Demo bildirimi",
+      "label": "Demo, gerçek bir klinik değil",
+      "tryAs": "Şu rolle deneyin:",
+      "patient": "Hasta",
+      "receptionist": "Resepsiyon",
+      "dentist": "Hekim",
+      "soon": "Personel ekranları demonun sonraki adımında açılacak",
+      "resets": "Veriler her gece 03:00'te sıfırlanır"
+    },
+    "pricing": {
+      "note": "Fiyat bilgisi için kliniğimizle iletişime geçin",
+      "body": "Her ağız farklıdır; kısa bir görüşme ya da muayeneden sonra size net bir fiyat teklifi veririz. Sürpriz yok.",
+      "call": "Ara: {phone}",
+      "callback": "Sizi arayalım",
+      "callShort": "Ara"
+    },
+    "slot": {
+      "label": "İlk boş randevu",
+      "today": "Bugün",
+      "tomorrow": "Yarın",
+      "when": "{day}, {time}",
+      "with": "{name} ile",
+      "tz": "İstanbul saati",
+      "none": "Bizi arayın, size uygun bir saat bulalım.",
+      "book": "Saat seç"
+    },
+    "home": {
+      "metaTitle": "Kadıköy, İstanbul'da diş kliniği",
+      "eyebrow": "Moda, Kadıköy'de diş kliniği",
+      "title": "İstanbul'da <em>gülüşünüze</em> daha sakin bir özen.",
+      "lead": "Muayene, beyazlatma, implant ve şeffaf plak tedavileri; her adımı anlatmaya zaman ayıran dört hekimle. Gerçek boş saatleri görün, bir dakikadan kısa sürede online randevu alın.",
+      "seeTreatments": "Tedavileri incele",
+      "trustRating": "4,9★",
+      "trustRatingLabel": "yorum (demo)",
+      "trustDentistsLabel": "hekim",
+      "trustLanguages": "TR · EN",
+      "trustLanguagesLabel": "konuşulur",
+      "artLabel": "Ihlamur yaprağıyla bir diş illüstrasyonu",
+      "treatmentsKicker": "Neler yapıyoruz",
+      "treatmentsTitle": "Süresi baştan belli tedaviler",
+      "treatmentsLead": "Her tedavinin ne kadar sürdüğünü görürsünüz; gününüzün geri kalanını rahatça planlarsınız.",
+      "allTreatments": "Tüm tedaviler",
+      "dentistsKicker": "Ekip",
+      "dentistsTitle": "Dört hekim, tek bir sakin klinik",
+      "dentistsLead": "Adınızı hatırlayacak kadar küçük, tüm aileye bakacak kadar kapsamlı.",
+      "allDentists": "Tüm hekimlerle tanışın",
+      "reviewsKicker": "Hastalar",
+      "reviewsTitle": "Hastalarımız ne diyor",
+      "reviewsTag": "Demo yorumlar, bu tanıtım için yazıldı",
+      "review1": "Yıllardır dişçiden kaçıyordum. Elif Hanım her adımı anlattı, ne olduğunu anlamadan bitti.",
+      "review1Name": "Ayşe K., Moda",
+      "review2": "Pazar akşamı Londra'dan randevu aldım, salı sabahı Dr. Kaya'yı gördüm. Her şey İngilizce, hiç zahmetsiz.",
+      "review2Name": "Daniel B., ziyaretçi",
+      "review3": "Oğlum ne zaman tekrar gideceğimizi sordu. Bu daha önce hiç olmamıştı.",
+      "review3Name": "Zeynep Ç., Kadıköy",
+      "intlTitle": "İstanbul'a mı geliyorsunuz?",
+      "intlBody": "Tüm ekibimiz İngilizce konuşuyor. Yola çıkmadan randevunuzu alın; gördüğünüz tüm saatler İstanbul saatidir.",
+      "intlLink": "Yurt dışından randevu",
+      "ctaTitle": "Hazır olduğunuzda buradayız",
+      "ctaBody": "Size uyan bir saat seçin ya da bizi arayın, birlikte karar verelim."
+    },
+    "treatments": {
+      "metaTitle": "Tedaviler",
+      "kicker": "Tedaviler",
+      "title": "Gülüşünüzün her dönemi için bakım",
+      "lead": "Her birinin süresi net olan yedi tedavi. Hangisine ihtiyacınız olduğundan emin değil misiniz? Bir muayene randevusu alın, gerisini birlikte planlayalım.",
+      "minutes": "{count} dk",
+      "duration": "Süre",
+      "details": "Ayrıntılar",
+      "detailsFor": "Ayrıntılar: {name}",
+      "book": "Bu tedavi için randevu al",
+      "who": "Bu tedaviyi yapan hekimler",
+      "back": "Tüm tedaviler",
+      "visitTitle": "Ziyaretiniz",
+      "visit1Title": "Online randevu alın",
+      "visit1": "Size uyan boş bir saat seçin. Onay e-postanız hemen gelir.",
+      "visit2Title": "On dakika erken gelin",
+      "visit2": "Sağlık geçmişinizi bir çay eşliğinde, hiç acele etmeden konuşuruz.",
+      "visit3Title": "Bir planla ayrılın",
+      "visit3": "Hekiminiz ne bulduğunu ve sonraki adımı sade bir dille anlatır."
+    },
+    "dentists": {
+      "metaTitle": "Hekimlerimiz",
+      "kicker": "Hekimlerimiz",
+      "title": "Lindenya'nın arkasındaki ekip",
+      "lead": "Farklı uzmanlıklara sahip dört hekim, tek bir çalışma biçimi: önce anlat, nazikçe tedavi et, takibini yap.",
+      "performs": "Tedaviler",
+      "bookWith": "{name} ile randevu al"
+    },
+    "international": {
+      "metaTitle": "Uluslararası hastalar",
+      "kicker": "Uluslararası hastalar",
+      "title": "Yurt dışından Kadıköy'e",
+      "lead": "İster burada yaşayın ister bir haftalığına şehirde olun, randevu almak aynı: online, İngilizce ya da Türkçe, gerçek boş saatlerle.",
+      "englishTitle": "İngilizce konuşan bir ekip",
+      "englishBody": "Tüm hekimlerimiz ve resepsiyon ekibimiz Türkçenin yanı sıra İngilizce de konuşuyor. E-postalarınız ve hatırlatmalarınız randevu aldığınız dilde gelir.",
+      "timeTitle": "Tüm saatler İstanbul saatidir",
+      "timeBody": "Nereden randevu alırsanız alın, gördüğünüz saatler İstanbul saatidir (yıl boyunca GMT+3).",
+      "quoteTitle": "Tedaviden önce fiyat teklifi",
+      "quoteBody": "Sizinle bir plan ve fiyat üzerinde anlaşmadan hiçbir tedaviye başlamayız.",
+      "stepsTitle": "Yurt dışından randevu nasıl alınır",
+      "step1Title": "Tedavi ve saat seçin",
+      "step1": "Online seçin. Emin değilseniz, en iyi başlangıç bir muayenedir.",
+      "step2Title": "Onayınızı alın",
+      "step2": "Takvim dosyası ve değiştirme ya da iptal bağlantısı içeren bir e-posta gelir.",
+      "step3Title": "Planlar mı değişti? Sorun değil",
+      "step3": "E-postanızdaki bağlantıyla randevunuzu 24 saat öncesine kadar taşıyabilir ya da iptal edebilirsiniz.",
+      "step4Title": "Bizi Moda'da bulun",
+      "step4": "Kadıköy vapur iskelesine kısa bir yürüme mesafesindeyiz.",
+      "gettingTitle": "Ulaşım",
+      "gettingBody": "Kadıköy, İstanbul'un Anadolu yakasında. Karaköy ve Eminönü'nden vapurlar kalkıyor, Marmaray ise yakındaki Ayrılık Çeşmesi'nde duruyor. İskeleden Moda Caddesi boyunca güneye yaklaşık on dakika yürüyün."
+    },
+    "contact": {
+      "metaTitle": "İletişim",
+      "kicker": "İletişim",
+      "title": "Moda'da sizi bekliyoruz",
+      "lead": "Arayın, yazın ya da uğrayın. Sizi aramamızı isterseniz numaranızı aşağıya bırakın.",
+      "address": "Adres",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "hours": "Çalışma saatleri",
+      "closed": "Kapalı",
+      "lunch": "Öğle arası {start}–{end}",
+      "mapLabel": "Kliniğin Kadıköy vapur iskelesine yakın, Moda Caddesi üzerindeki konumunu gösteren illüstrasyon harita",
+      "mapNote": "İllüstrasyon, ölçekli değildir",
+      "mapPier": "Vapur iskelesi",
+      "mapSea": "Marmara Denizi",
+      "callbackTitle": "Sizi arayalım",
+      "callbackBody": "Adınızı ve numaranızı bırakın, genellikle aynı iş günü içinde sizi arayalım.",
+      "callbackSoon": "Online geri arama talepleri çok yakında. O zamana kadar {phone} numarasından bize ulaşabilirsiniz."
+    },
+    "footer": {
+      "tagline": "Moda, Kadıköy'de küçük bir diş kliniği.",
+      "visit": "Adres",
+      "explore": "Keşfedin",
+      "hours": "Saatler",
+      "demoNote": "Lindenya hayali bir kliniktir ve bir portföy demosu olarak hazırlanmıştır. İsimler, adresler, telefon numaraları ve yorumlar uydurmadır.",
+      "rights": "© {year} Lindenya Diş Kliniği (hayali)"
     }
   }
 }
