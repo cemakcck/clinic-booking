@@ -336,7 +336,9 @@ export async function getTodayForDentist(
   now: Date,
   opts: { locale?: "en" | "tr" } = {},
 ): Promise<{ items: TodayItem[]; nextId: string | null }> {
-  if (actor.role !== "dentist" || actor.dentistId === null) throw new BookingError("forbidden");
+  if (actor.dentistId === null || !can(actor, "appointment.status", { dentistId: actor.dentistId })) {
+    throw new BookingError("forbidden");
+  }
   const day = istanbulDateOf(now);
   const window = { start: atIstanbul(day, "00:00"), end: atIstanbul(addDays(day, 1), "00:00") };
   const rows = await db

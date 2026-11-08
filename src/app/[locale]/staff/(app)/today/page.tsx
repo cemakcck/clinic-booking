@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import TodayList from "@/components/staff/TodayList";
 import { requireActor } from "@/lib/auth/actor";
+import { can } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { getTodayForDentist } from "@/lib/staff/calendar-data";
 import { formatLongDate, istanbulDateOf, istanbulTimeOf } from "@/lib/time";
@@ -23,7 +24,7 @@ export default async function TodayPage({ params }: Props) {
   const locale = raw as Locale;
   // Pages authorize themselves: the layout's check alone can be skipped by segment requests.
   const actor = await requireActor();
-  if (actor.role !== "dentist" || actor.dentistId === null) notFound();
+  if (actor.dentistId === null || !can(actor, "appointment.status", { dentistId: actor.dentistId })) notFound();
 
   const now = new Date();
   const t = await getTranslations("staff.today");
