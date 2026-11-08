@@ -165,4 +165,137 @@ export async function insertOutsideHours(date: string, from: string, to: string)
   });
 }
 
+/** The seeded demo dentist (Dr. Elif Aydın). */
+export async function elifId(): Promise<number> {
+  return withDb(async (db) => {
+    const [d] = await db.select({ id: dentists.id }).from(dentists).where(eq(dentists.slug, "elif-aydin"));
+    return d.id;
+  });
+}
+
+async function insertAppt(db: Db, dentistId: number, start: Date, minutes: number, name: string) {
+  const [t] = await db.select({ id: treatments.id }).from(treatments).where(eq(treatments.slug, "checkup"));
+  const phone = `+90532${String(Math.floor(Math.random() * 1e7)).padStart(7, "0")}`;
+  const [p] = await db
+    .insert(patients)
+    .values({ name, phoneE164: phone, email: "dentist-e2e@example.com", locale: "en" })
+    .returning({ id: patients.id });
+  try {
+    const [e] = await db
+      .insert(entries)
+      .values({
+        dentistId,
+        kind: "appointment",
+        during: { start, end: new Date(start.getTime() + minutes * 60_000) },
+        treatmentId: t.id,
+        patientId: p.id,
+        status: "booked",
+        source: "staff",
+        createdBy: "e2e",
+      })
+      .returning({ id: entries.id });
+    return { id: e.id, patientId: p.id };
+  } catch (err) {
+    await db.delete(patients).where(eq(patients.id, p.id));
+    throw err;
+  }
+}
+
+/** An appointment inserted directly, with a cleanup that removes it and its patient. */
+export async function addAppointment(dentistId: number, date: string, from: string, name: string, minutes = 30) {
+  return withDb(async (db) => {
+    const a = await insertAppt(db, dentistId, atIstanbul(date, from), minutes, name);
+    return { id: a.id, cleanup: () => removeAppointment(a.id, a.patientId) };
+  });
+}
+
+function removeAppointment(id: string, patientId: string) {
+  return withDb(async (db) => {
+    await db.delete(entries).where(eq(entries.id, id));
+    await db.delete(patients).where(eq(patients.id, patientId));
+  });
+}
+
+/**
+ * A booked 30-minute appointment for `dentistId` later today (Istanbul): the next free 15-minute
+ * start from 10 minutes ahead. Independent of what the seed put on today's calendar.
+ */
+export async function addTodayAppointment(dentistId: number, name: string) {
+  return withDb(async (db) => {
+    const now = new Date();
+    const today = istanbulDateOf(now);
+    const first = new Date(Math.ceil((now.getTime() + 10 * 60_000) / 900_000) * 900_000);
+    for (let t = first; istanbulDateOf(new Date(t.getTime() + 30 * 60_000)) === today; t = new Date(t.getTime() + 900_000)) {
+      try {
+        const a = await insertAppt(db, dentistId, t, 30, name);
+        return { id: a.id, time: istanbulTimeOf(t), cleanup: () => removeAppointment(a.id, a.patientId) };
+      } catch {
+        // Overlaps something on the calendar: try the next start.
+      }
+    }
+    throw new Error("no room left today for a test appointment");
+  });
+}
+
+/** Free start times (HH:MM) of a 30-minute check-up for one dentist on `date`, under staff rules. */
+export async function freeStarts(dentistId: number, date: string): Promise<string[]> {
+  return withDb(async (db) => {
+    const [t] = await db.select({ id: treatments.id }).from(treatments).where(eq(treatments.slug, "checkup"));
+    const slots = await getDaySlots(db, { treatmentId: t.id, dentistId, date, now: new Date(), audience: "staff" });
+    return slots.map((s) => istanbulTimeOf(s.start));
+  });
+}
+
+/**
+ * The first weekday from the quiet date on where `dentistId` has free starts that satisfy `ok`.
+ * Elif's seeded days are dense, so tests look further out (empty days beyond the seeded fortnight).
+ */
+export async function freeDay(dentistId: number, ok: (starts: string[]) => boolean = (s) => s.length > 0) {
+  let date = await quietDate();
+  for (let n = 0; n < 40; n++, date = addDays(date, 1)) {
+    if (weekdayOf(date) === 0 || weekdayOf(date) === 6) continue;
+    const starts = await freeStarts(dentistId, date);
+    if (ok(starts)) return { date, starts };
+  }
+  throw new Error("no suitable day found");
+}
+
+/** A start free on `date` and on the same weekday for the next `weeks` weeks too (weekly block). */
+export async function weeklyFreeStart(dentistId: number, date: string, weeks: number): Promise<string> {
+  const base = await freeStarts(dentistId, date);
+  const later = await Promise.all(Array.from({ length: weeks }, (_, i) => freeStarts(dentistId, addDays(date, 7 * (i + 1)))));
+  const hit = base.find((s) => later.every((l) => l.includes(s) && l.includes(addMinutes(s, 15))));
+  if (!hit) throw new Error(`no start free for ${weeks + 1} weeks from ${date}`);
+  return hit;
+}
+
+export function addMinutes(time: string, n: number): string {
+  const [h, m] = time.split(":").map(Number);
+  const t = h * 60 + m + n;
+  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+}
+
+/** Removes an appointment created through the UI, with its patient. */
+export async function deleteEntryAndPatient(id: string) {
+  return withDb(async (db) => {
+    const [e] = await db.select({ p: entries.patientId }).from(entries).where(eq(entries.id, id));
+    await db.delete(entries).where(eq(entries.id, id));
+    if (e?.p) await db.delete(patients).where(eq(patients.id, e.p));
+  });
+}
+
+/** Blocks created by a test carry a unique note; this removes them all. */
+export async function deleteBlocksByNote(note: string) {
+  return withDb(async (db) => {
+    await db.delete(entries).where(and(eq(entries.kind, "block"), eq(entries.blockNote, note)));
+  });
+}
+
+export async function blocksByNote(note: string) {
+  return withDb(async (db) => {
+    const rows = await db.select({ during: entries.during }).from(entries).where(and(eq(entries.kind, "block"), eq(entries.blockNote, note)));
+    return rows.map((r) => ({ date: istanbulDateOf(r.during.start), start: istanbulTimeOf(r.during.start) })).sort((a, b) => a.date.localeCompare(b.date));
+  });
+}
+
 export { atIstanbul };

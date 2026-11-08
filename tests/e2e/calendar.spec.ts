@@ -298,7 +298,7 @@ test("a dentist edits only their own column; others open read-only", async ({ pa
   await page.goto("/en/staff/login");
   await page.getByRole("button", { name: "Sign in as Dentist" }).click();
   await expect(page).toHaveURL(/\/en\/staff\/today/);
-  await page.goto(`/en/staff/calendar?date=${date}`);
+  await page.goto(`/en/staff/calendar?view=day&date=${date}`);
   const cols = page.getByTestId("column");
   const own = cols.first(); // Dr. Elif Aydın, the demo dentist, sorts first
   await expect(page.getByTestId("column-head").first()).toContainText("Dr. Elif Aydın");

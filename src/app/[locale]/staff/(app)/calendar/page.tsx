@@ -56,7 +56,9 @@ export default async function CalendarPage({ params, searchParams }: Props) {
   const sp = await searchParams;
   const now = new Date();
   const today = istanbulDateOf(now);
-  const view = one(sp.view) === "week" ? "week" : "day";
+  // A dentist's calendar opens on their own week unless the URL says otherwise.
+  const defaultView = actor.role === "dentist" && one(sp.dentist) === undefined ? "week" : "day";
+  const view = (one(sp.view) ?? defaultView) === "week" ? "week" : "day";
   const date = validDate(one(sp.date)) ?? today;
   const openId = one(sp.open);
   const mine = parseMine((await cookies()).get(MINE_COOKIE)?.value);

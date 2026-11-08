@@ -377,9 +377,25 @@
       "backToSite": "Back to the website",
       "rateLimited": "Too many sign-in attempts. Please wait 15 minutes and try again."
     },
-    "placeholder": {
-      "todayTitle": "Today",
-      "body": "This view is being built in the next step of the demo."
+    "today": {
+      "metaTitle": "Today",
+      "greetingMorning": "Good morning,",
+      "greetingAfternoon": "Good afternoon,",
+      "greetingEvening": "Good evening,",
+      "count": "{count, plural, =0 {No patients} one {# patient} other {# patients}}",
+      "countLine": "{date} · {count}",
+      "empty": "No appointments today. Block time ahead, or open your calendar.",
+      "list": "Today's patients",
+      "next": "Next",
+      "actionsFor": "Status actions for {name}",
+      "arrived": "Arrived",
+      "noShow": "No-show",
+      "completed": "Completed",
+      "undoArrived": "Undo arrival",
+      "undoNoShow": "Undo no-show",
+      "blockTime": "Block time",
+      "openCalendar": "Open my calendar",
+      "dismiss": "Dismiss"
     },
     "calendar": {
       "metaTitle": "Calendar",

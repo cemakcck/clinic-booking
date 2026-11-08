@@ -377,9 +377,25 @@
       "backToSite": "Web sitesine dön",
       "rateLimited": "Çok fazla giriş denemesi yapıldı. Lütfen 15 dakika bekleyip tekrar deneyin."
     },
-    "placeholder": {
-      "todayTitle": "Bugün",
-      "body": "Bu ekran demonun bir sonraki adımında hazırlanıyor."
+    "today": {
+      "metaTitle": "Bugün",
+      "greetingMorning": "Günaydın,",
+      "greetingAfternoon": "İyi günler,",
+      "greetingEvening": "İyi akşamlar,",
+      "count": "{count, plural, =0 {Hasta yok} one {# hasta} other {# hasta}}",
+      "countLine": "{date} · {count}",
+      "empty": "Bugün randevu yok. İleri bir zamanı kapatabilir veya takviminizi açabilirsiniz.",
+      "list": "Bugünkü hastalar",
+      "next": "Sıradaki",
+      "actionsFor": "{name} için durum işlemleri",
+      "arrived": "Geldi",
+      "noShow": "Gelmedi",
+      "completed": "Tamamlandı",
+      "undoArrived": "Gelişi geri al",
+      "undoNoShow": "Gelmedi'yi geri al",
+      "blockTime": "Saat kapat",
+      "openCalendar": "Takvimimi aç",
+      "dismiss": "Kapat"
     },
     "calendar": {
       "metaTitle": "Takvim",

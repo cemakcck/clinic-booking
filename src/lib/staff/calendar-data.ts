@@ -18,6 +18,7 @@ import { countPublicSlots, getDaySlots } from "@/lib/booking/availability";
 import { effectiveHours, type HoursRange } from "@/lib/slots/engine";
 import { dayBounds } from "@/lib/calendar/geometry";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
+import { BookingError } from "@/lib/booking/errors";
 import { findOutsideHours } from "./outside-hours";
 import type { BlockReason } from "./blocks";
 
@@ -314,4 +315,63 @@ export async function treatmentOptions(db: DbOrTx, locale: "en" | "tr") {
     durationMin: t.durationMin,
     dentistIds: links.filter((l) => l.treatmentId === t.id).map((l) => l.dentistId),
   }));
+}
+
+export type TodayItem = {
+  id: string;
+  start: string;
+  end: string;
+  patientName: string;
+  treatmentName: string;
+  status: CalStatus;
+};
+
+/**
+ * The signed-in dentist's own live appointments for the Istanbul day of `now`, in time order.
+ * `nextId` is the first booked or arrived one whose end is after `now` (the patient to see next).
+ */
+export async function getTodayForDentist(
+  db: DbOrTx,
+  actor: Actor,
+  now: Date,
+  opts: { locale?: "en" | "tr" } = {},
+): Promise<{ items: TodayItem[]; nextId: string | null }> {
+  if (actor.role !== "dentist" || actor.dentistId === null) throw new BookingError("forbidden");
+  const day = istanbulDateOf(now);
+  const window = { start: atIstanbul(day, "00:00"), end: atIstanbul(addDays(day, 1), "00:00") };
+  const rows = await db
+    .select({
+      id: entries.id,
+      during: entries.during,
+      status: entries.status,
+      patientName: patients.name,
+      nameEn: treatments.nameEn,
+      nameTr: treatments.nameTr,
+    })
+    .from(entries)
+    .leftJoin(treatments, eq(treatments.id, entries.treatmentId))
+    .leftJoin(patients, eq(patients.id, entries.patientId))
+    .where(
+      and(
+        eq(entries.dentistId, actor.dentistId),
+        eq(entries.kind, "appointment"),
+        eq(entries.active, true),
+        overlaps(entries.during, window),
+      ),
+    )
+    .orderBy(asc(entries.during));
+  const items = rows
+    .filter((r) => istanbulDateOf(r.during.start) === day)
+    .map(
+      (r): TodayItem => ({
+        id: r.id,
+        start: r.during.start.toISOString(),
+        end: r.during.end.toISOString(),
+        patientName: r.patientName ?? "",
+        treatmentName: (opts.locale === "tr" ? r.nameTr : r.nameEn) ?? "",
+        status: (r.status ?? "booked") as CalStatus,
+      }),
+    );
+  const next = items.find((i) => (i.status === "booked" || i.status === "arrived") && new Date(i.end) > now);
+  return { items, nextId: next?.id ?? null };
 }
