@@ -15,6 +15,13 @@
       "when": 1794151029583,
       "tag": "0001_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794151164973,
+      "tag": "0002_range_valid",
+      "breakpoints": true
     }
   ]
 }

@@ -97,6 +97,10 @@ describe("entries no-overlap constraint", () => {
     expect(code).toBe("23P01");
   });
 
+  it("rejects an empty range (start == end)", async () => {
+    expect(await codeOf(block(fx.dentists.ayd, "10:00", "10:00"))).toBe("23514");
+  });
+
   it("rejects a cancelled entry left active", async () => {
     const [p] = await insertPatient();
     const code = await codeOf(
