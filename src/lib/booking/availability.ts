@@ -239,3 +239,46 @@ export async function assertBookable(
     throw new BookingError("outside_rules");
   }
 }
+
+/**
+ * Why a start time failed the rules check: `slot_taken` when a live entry (appointment, block or
+ * unexpired hold, other than `ignoreEntryId`) overlaps the range, which is what the loser of a
+ * race sees; otherwise `outside_rules`. `dentistId` null checks every dentist.
+ */
+export async function notBookableReason(
+  db: DbOrTx,
+  dentistId: number | null,
+  range: Interval,
+  now: Date,
+  ignoreEntryId?: string,
+): Promise<BookingError> {
+  const rows = await db
+    .select({ id: entries.id })
+    .from(entries)
+    .where(
+      and(
+        dentistId === null ? sql`true` : eq(entries.dentistId, dentistId),
+        eq(entries.active, true),
+        overlaps(entries.during, range),
+        or(isNull(entries.expiresAt), gt(entries.expiresAt, now)),
+        ignoreEntryId ? ne(entries.id, ignoreEntryId) : sql`true`,
+      ),
+    )
+    .limit(1);
+  return new BookingError(rows.length ? "slot_taken" : "outside_rules");
+}
+
+/** assertBookable, but a time that is only blocked by a live entry gives `slot_taken`. */
+export async function assertBookableOrTaken(
+  db: DbOrTx,
+  q: Parameters<typeof assertBookable>[1] & { end: Date },
+): Promise<void> {
+  try {
+    await assertBookable(db, q);
+  } catch (e) {
+    if (e instanceof BookingError && e.code === "outside_rules") {
+      throw await notBookableReason(db, q.dentistId, { start: q.start, end: q.end }, q.now, q.ignoreEntryId);
+    }
+    throw e;
+  }
+}

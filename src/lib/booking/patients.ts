@@ -28,7 +28,12 @@ export async function upsertPatient(
     .values({ name: p.name.trim(), phoneE164, email: p.email ?? null, locale: p.locale })
     .onConflictDoUpdate({
       target: patients.phoneE164,
-      set: { name: sql`excluded.name`, email: sql`excluded.email`, locale: sql`excluded.locale` },
+      // A staff booking without an email keeps the one already on file.
+      set: {
+        name: sql`excluded.name`,
+        email: sql`coalesce(excluded.email, ${patients.email})`,
+        locale: sql`excluded.locale`,
+      },
     })
     .returning({ id: patients.id });
   return row.id;

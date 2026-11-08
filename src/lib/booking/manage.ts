@@ -1,10 +1,9 @@
-import { and, eq, ne } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Db, DbOrTx } from "@/lib/db/client";
 import { dentists, entries, treatments } from "@/lib/db/schema";
-import { overlaps } from "@/lib/db/range";
 import { hashToken } from "@/lib/security/tokens";
 import { MANAGE_CUTOFF_HOURS } from "@/config/booking";
-import { assertBookable } from "./availability";
+import { assertBookableOrTaken } from "./availability";
 import { lockDentists, updateEntryRange } from "./entries";
 import { BookingError } from "./errors";
 
@@ -137,35 +136,16 @@ export async function rescheduleByPatient(db: Db, token: string, newStart: Date,
   assertChangeable(await findByToken(db, token), now);
   await withLockedAppointment(db, token, now, async (tx, row) => {
     const range = { start: newStart, end: new Date(newStart.getTime() + row.durationMin * 60_000) };
-    try {
-      await assertBookable(tx, {
-        treatmentId: row.treatmentId,
-        dentistId: row.dentistId,
-        start: newStart,
-        now,
-        audience: "public",
-        ignoreEntryId: row.id,
-      });
-    } catch (e) {
-      if (e instanceof BookingError && e.code === "outside_rules") {
-        // A time someone else holds or has booked is "taken", not a rule problem.
-        const [clash] = await tx
-          .select({ id: entries.id })
-          .from(entries)
-          .where(
-            and(
-              eq(entries.dentistId, row.dentistId),
-              eq(entries.active, true),
-              eq(entries.kind, "appointment"),
-              ne(entries.id, row.id),
-              overlaps(entries.during, range),
-            ),
-          )
-          .limit(1);
-        if (clash) throw new BookingError("slot_taken");
-      }
-      throw e;
-    }
+    // A time someone else holds, blocked or has booked is "taken", not a rule problem.
+    await assertBookableOrTaken(tx, {
+      treatmentId: row.treatmentId,
+      dentistId: row.dentistId,
+      start: newStart,
+      end: range.end,
+      now,
+      audience: "public",
+      ignoreEntryId: row.id,
+    });
     await updateEntryRange(tx, row.id, row.dentistId, range, now);
   });
 }

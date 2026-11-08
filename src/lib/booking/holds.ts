@@ -1,12 +1,11 @@
-import { and, eq, gt, isNull, or, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { dentists, entries, treatments } from "@/lib/db/schema";
-import { overlaps } from "@/lib/db/range";
 import { HOLD_MINUTES } from "@/config/booking";
 import { addDays, atIstanbul, istanbulDateOf } from "@/lib/time";
 import { pickAnyDentist } from "@/lib/slots/engine";
 import type { Locale } from "@/i18n/routing";
-import { assertBookable, getDaySlots } from "./availability";
+import { assertBookable, assertBookableOrTaken, getDaySlots, notBookableReason } from "./availability";
 import { BookingError } from "./errors";
 import { insertEntry, lockDentistEntries, updateEntryRange } from "./entries";
 import { upsertPatient } from "./patients";
@@ -16,31 +15,6 @@ import { deriveManageToken, hashToken, newToken } from "@/lib/security/tokens";
 const MIN = 60_000;
 
 export type PlacedHold = { holdId: string; holdToken: string; dentistId: number; expiresAt: Date };
-
-/**
- * A slot that fails the rules check is `slot_taken` when a live entry (appointment, block or
- * unexpired hold) overlaps it, which is what a loser of a race sees; otherwise `outside_rules`.
- */
-async function notBookableReason(
-  db: Db,
-  dentistId: number | null,
-  range: { start: Date; end: Date },
-  now: Date,
-): Promise<BookingError> {
-  const rows = await db
-    .select({ id: entries.id })
-    .from(entries)
-    .where(
-      and(
-        dentistId === null ? sql`true` : eq(entries.dentistId, dentistId),
-        eq(entries.active, true),
-        overlaps(entries.during, range),
-        or(isNull(entries.expiresAt), gt(entries.expiresAt, now)),
-      ),
-    )
-    .limit(1);
-  return new BookingError(rows.length ? "slot_taken" : "outside_rules");
-}
 
 export async function placeHold(
   db: Db,
@@ -87,20 +61,14 @@ export async function placeHold(
       remaining.splice(remaining.findIndex((c) => c.dentistId === next), 1);
     }
   } else {
-    try {
-      await assertBookable(db, {
-        treatmentId: q.treatmentId,
-        dentistId: q.dentistId,
-        start: q.start,
-        now: q.now,
-        audience: "public",
-      });
-    } catch (e) {
-      if (e instanceof BookingError && e.code === "outside_rules") {
-        throw await notBookableReason(db, q.dentistId, range, q.now);
-      }
-      throw e;
-    }
+    await assertBookableOrTaken(db, {
+      treatmentId: q.treatmentId,
+      dentistId: q.dentistId,
+      start: q.start,
+      end: range.end,
+      now: q.now,
+      audience: "public",
+    });
     order = [q.dentistId];
   }
 
