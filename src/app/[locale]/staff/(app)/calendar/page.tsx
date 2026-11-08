@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import CalendarShell from "@/components/calendar/CalendarShell";
 import type { Column } from "@/components/calendar/types";
 import { requireActor } from "@/lib/auth/actor";
+import { widenBounds } from "@/lib/calendar/geometry";
 import { can } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { MINE_COOKIE, parseMine } from "@/lib/demo/mine";
@@ -109,6 +110,16 @@ export default async function CalendarPage({ params, searchParams }: Props) {
           })),
         );
 
+  // Appointments outside today's clinic hours (e.g. after an admin shrank them) must stay on the
+  // grid so reception can open and move them: widen it to whole hours around them. Blocks are
+  // left out, so an all-day leave doesn't stretch the grid to midnight; they are clamped.
+  const items = layoutEntries(data.entries, dates);
+  const appointmentIds = new Set(data.entries.filter((e) => e.kind === "appointment").map((e) => e.id));
+  const bounds = widenBounds(
+    grid.bounds,
+    items.filter((it) => appointmentIds.has(it.entryId)),
+  );
+
   const q = (o: Record<string, string | number | null | undefined>) => {
     const s = new URLSearchParams();
     for (const [k, v] of Object.entries(o)) if (v !== null && v !== undefined) s.set(k, String(v));
@@ -137,10 +148,10 @@ export default async function CalendarPage({ params, searchParams }: Props) {
       nowIso={now.toISOString()}
       title={title}
       hrefs={hrefs}
-      bounds={grid.bounds}
+      bounds={bounds}
       columns={columns}
       entries={data.entries}
-      items={layoutEntries(data.entries, dates)}
+      items={items}
       counters={data.counters}
       outsideHours={data.outsideHours}
       dentists={dentists}

@@ -39,3 +39,21 @@ export function dayBounds(clinicHours: { open: string | null; close: string | nu
   const end = Math.max(...open.map((h) => timeToMin(h.close)));
   return { open: minToTime(start), close: minToTime(end) };
 }
+
+/**
+ * The grid's displayed hours: `bounds` widened to whole hours so every given range (the shown
+ * appointments) fits. An appointment left outside after an admin shrank the hours stays visible
+ * and openable. Ranges are minutes after midnight; the result never leaves 00:00–24:00.
+ */
+export function widenBounds(
+  bounds: { open: string; close: string },
+  ranges: { startMin: number; endMin: number }[],
+): { open: string; close: string } {
+  let open = timeToMin(bounds.open);
+  let close = timeToMin(bounds.close);
+  for (const r of ranges) {
+    open = Math.min(open, Math.max(0, Math.floor(r.startMin / 60) * 60));
+    close = Math.max(close, Math.min(1440, Math.ceil(r.endMin / 60) * 60));
+  }
+  return { open: minToTime(open), close: minToTime(close) };
+}

@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { createDb, type Db } from "@/lib/db/client";
-import { clinicHours, dentists, entries, treatments } from "@/lib/db/schema";
+import { clinicHours, dentists, entries, patients, treatments } from "@/lib/db/schema";
 import { getDaySlots } from "@/lib/booking/availability";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
 import { DEMO_FLOOR } from "@/config/booking";
@@ -124,6 +124,44 @@ export async function entryRows(ids: string[]) {
       .from(entries)
       .where(inArray(entries.id, ids));
     return rows.map((r) => ({ ...r, start: istanbulTimeOf(r.during.start), date: istanbulDateOf(r.during.start) }));
+  });
+}
+
+/**
+ * An active booked appointment at `from`–`to` on `date` for the first dentist, inserted directly
+ * (as if the admin later shrank the hours). Returns its id and a cleanup function.
+ */
+export async function insertOutsideHours(date: string, from: string, to: string) {
+  return withDb(async (db) => {
+    const [d] = await db.select({ id: dentists.id }).from(dentists).orderBy(asc(dentists.sortOrder)).limit(1);
+    const [t] = await db.select({ id: treatments.id }).from(treatments).where(eq(treatments.slug, "checkup"));
+    const phone = `+90532${String(Math.floor(Math.random() * 1e7)).padStart(7, "0")}`;
+    const [p] = await db
+      .insert(patients)
+      .values({ name: "Early Bird Kaya", phoneE164: phone, email: "early@example.com", locale: "en" })
+      .returning({ id: patients.id });
+    const [e] = await db
+      .insert(entries)
+      .values({
+        dentistId: d.id,
+        kind: "appointment",
+        during: { start: atIstanbul(date, from), end: atIstanbul(date, to) },
+        treatmentId: t.id,
+        patientId: p.id,
+        status: "booked",
+        source: "staff",
+        createdBy: "e2e",
+      })
+      .returning({ id: entries.id });
+    return {
+      id: e.id,
+      dentistId: d.id,
+      cleanup: () =>
+        withDb(async (db2) => {
+          await db2.delete(entries).where(eq(entries.id, e.id));
+          await db2.delete(patients).where(eq(patients.id, p.id));
+        }),
+    };
   });
 }
 

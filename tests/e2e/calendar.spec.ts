@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { bookAnyCheckup } from "./helpers";
-import { entryRows, findClash, findMovable, freeWindow, quietDate } from "./calendar-db";
+import { entryRows, findClash, findMovable, freeWindow, insertOutsideHours, quietDate } from "./calendar-db";
 
 test.use({ viewport: { width: 1400, height: 1000 } });
 
@@ -314,4 +314,33 @@ test("a dentist edits only their own column; others open read-only", async ({ pa
   const block = page.getByRole("dialog", { name: "Block time" });
   await expect(block).toContainText("Your calendar");
   await expect(block.getByLabel("Dentist")).toHaveCount(0);
+});
+
+test("appointments outside the clinic hours stay visible, flagged and openable", async ({ page }) => {
+  const date = await quietDate();
+  const early = await insertOutsideHours(date, "08:00", "08:30");
+  const late = await insertOutsideHours(date, "18:30", "19:00");
+  try {
+    await asReceptionist(page, `/en/staff/calendar?date=${date}`);
+    for (const path of [`/en/staff/calendar?date=${date}`, `/en/staff/calendar?view=week&date=${date}&dentist=${early.dentistId}`]) {
+      await page.goto(path);
+      await expect(page.getByTestId("attention")).toContainText(/Needs attention: [2-9]/);
+      for (const [a, start] of [[early, "08:00"], [late, "18:30"]] as const) {
+        const e = entry(page, a.id);
+        await expect(e).toBeVisible();
+        await expect(e).toHaveAttribute("data-start", start);
+        await expect(e).toContainText("Outside working hours");
+        await expect(e.locator('[aria-hidden="true"]', { hasText: "⚠" })).toBeVisible();
+      }
+      await entry(page, early.id).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toContainText("Early Bird Kaya");
+      await expect(dialog.getByRole("button", { name: "Cancel appointment" })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+    }
+  } finally {
+    await early.cleanup();
+    await late.cleanup();
+  }
 });

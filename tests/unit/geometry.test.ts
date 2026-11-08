@@ -6,6 +6,7 @@ import {
   minutesToY,
   snapTopY,
   timeToMin,
+  widenBounds,
   yToSnappedMinutes,
 } from "@/lib/calendar/geometry";
 
@@ -73,5 +74,14 @@ describe("calendar geometry", () => {
     expect(minToTime(540)).toBe("09:00");
     expect(minToTime(825)).toBe("13:45");
     expect(minToTime(1440)).toBe("24:00");
+  });
+
+  it("widenBounds stretches the grid to whole hours around outside appointments", () => {
+    const b = { open: "09:00", close: "18:00" };
+    expect(widenBounds(b, [])).toEqual(b);
+    expect(widenBounds(b, [{ startMin: 600, endMin: 630 }])).toEqual(b);
+    expect(widenBounds(b, [{ startMin: 8 * 60 + 15, endMin: 8 * 60 + 45 }])).toEqual({ open: "08:00", close: "18:00" });
+    expect(widenBounds(b, [{ startMin: 18 * 60 + 30, endMin: 19 * 60 + 15 }])).toEqual({ open: "09:00", close: "20:00" });
+    expect(widenBounds(b, [{ startMin: 0, endMin: 1440 }])).toEqual({ open: "00:00", close: "24:00" });
   });
 });
