@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { atIstanbul } from "@/lib/time";
 import { createDb, type Db } from "@/lib/db/client";
 
 export const TEST_DATABASE_URL =
@@ -29,7 +30,7 @@ export async function resetTables(db: Db): Promise<void> {
 
 /** Clinic wall time (Europe/Istanbul, UTC+3, no DST) to a Date. */
 export function T(date: string, time: string): Date {
-  return new Date(`${date}T${time}:00+03:00`);
+  return atIstanbul(date, time);
 }
 
 /** SQLSTATE of a Postgres error, whether raw or wrapped by Drizzle in `cause`. */
