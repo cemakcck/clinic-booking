@@ -32,6 +32,12 @@ describe("createCallbackRequest", () => {
     });
   });
 
+  it("stores the chosen language", async () => {
+    await createCallbackRequest(db, { ...valid, locale: "tr" }, { ipHash: "ip-1", now });
+    const [row] = await db.select().from(callbackRequests);
+    expect(row.locale).toBe("tr");
+  });
+
   it("honeypot stores nothing but reports ok", async () => {
     const r = await createCallbackRequest(db, { ...valid, website: "http://spam" }, { ipHash: "ip-1", now });
     expect(r).toEqual({ ok: true });

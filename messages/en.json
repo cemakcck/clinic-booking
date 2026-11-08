@@ -203,6 +203,9 @@
       "message": "Your message is too long (1000 characters at most).",
       "invalid": "Please check this field.",
       "rate_limited": "Too many requests from your connection. Please try again later or call us."
-    }
+    },
+    "language": "Preferred language",
+    "languageEn": "English",
+    "languageTr": "Türkçe"
   }
 }

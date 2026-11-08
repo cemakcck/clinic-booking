@@ -203,6 +203,9 @@
       "message": "Mesajınız çok uzun (en fazla 1000 karakter).",
       "invalid": "Lütfen bu alanı kontrol edin.",
       "rate_limited": "Bağlantınızdan çok fazla talep geldi. Lütfen daha sonra tekrar deneyin veya bizi arayın."
-    }
+    },
+    "language": "Tercih ettiğiniz dil",
+    "languageEn": "English",
+    "languageTr": "Türkçe"
   }
 }
