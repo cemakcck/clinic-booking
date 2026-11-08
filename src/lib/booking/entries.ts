@@ -44,16 +44,34 @@ async function sweepExpiredHolds(tx: DbOrTx, dentistId: number, range: Interval,
 }
 
 /**
- * Serialises writes to one dentist's entries until the transaction ends. Concurrent inserts into
- * the GiST exclusion constraint can otherwise each wait on the other's uncommitted row: a deadlock
- * (40P01) that Postgres only breaks after deadlock_timeout, one victim per second. Holding this
- * lock, an inserter sees the previous writer's committed row and gets 23P01 at once.
+ * Per-dentist write locks (transaction-scoped advisory locks), held until the transaction ends.
  *
- * Must run inside a transaction, before taking any row lock on this dentist's entries (lock order:
- * dentist, then rows), or two writers can deadlock on this lock and a row lock instead.
+ * Why: concurrent inserts into the GiST exclusion constraint can each wait on the other's
+ * uncommitted row, a deadlock (40P01) that Postgres only breaks after deadlock_timeout, one victim
+ * per second. Holding the dentist's lock, a writer sees the previous writer's committed row and
+ * gets 23P01 (slot_taken) at once.
+ *
+ * Rules for every transaction that writes entries:
+ *  1. Lock all involved dentists (current and target of a move) in ascending id order, in one
+ *     call, before taking any row lock (FOR UPDATE, UPDATE, DELETE) on entries. Taking a dentist
+ *     lock after a row lock, or in another order, can deadlock against another writer.
+ *  2. Rate-limit checks (checkAndRecordRate) run in their own committed transaction, never inside
+ *     a dentist-locked transaction.
+ *  3. No external I/O (email, HTTP) while a dentist lock is held; send after commit.
+ *
+ * Must run inside a transaction: on a bare connection the lock is released at once.
+ * Re-taking a lock the transaction already holds is a no-op.
  */
+export async function lockDentists(tx: DbOrTx, dentistIds: number[]): Promise<void> {
+  const ids = [...new Set(dentistIds)].sort((a, b) => a - b);
+  for (const id of ids) {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('entries:dentist'), ${id})`);
+  }
+}
+
+/** One dentist's lock; see lockDentists for the rules. */
 export async function lockDentistEntries(tx: DbOrTx, dentistId: number): Promise<void> {
-  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('entries:dentist'), ${dentistId})`);
+  await lockDentists(tx, [dentistId]);
 }
 
 /** Inside a transaction: takes the dentist lock, sweeps expired holds, inserts. */
@@ -66,7 +84,11 @@ export async function insertEntry(tx: DbOrTx, row: NewEntry, now: Date): Promise
   });
 }
 
-/** Inside a transaction; take the entry's dentist lock before locking its row (see confirmBooking). */
+/**
+ * Inside a transaction: moves an entry to `dentistId` and `range`. Locks the entry's current and
+ * target dentists (ascending) before touching any row. A caller that already holds a row lock on
+ * the entry must have locked both dentists with lockDentists before it (rule 1).
+ */
 export async function updateEntryRange(
   tx: DbOrTx,
   id: string,
@@ -74,7 +96,15 @@ export async function updateEntryRange(
   range: Interval,
   now: Date,
 ): Promise<void> {
-  await lockDentistEntries(tx, dentistId);
+  // Plain read, no row lock: rule 1 forbids row locks before the dentist locks.
+  const [cur] = await tx.select({ dentistId: entries.dentistId }).from(entries).where(eq(entries.id, id));
+  await lockDentists(tx, cur ? [cur.dentistId, dentistId] : [dentistId]);
+  if (cur) {
+    // Moved to another dentist between the read and the lock: we would hold the wrong lock, and
+    // taking one more now could break the ascending order. Report it as a conflict.
+    const [again] = await tx.select({ dentistId: entries.dentistId }).from(entries).where(eq(entries.id, id));
+    if (again && again.dentistId !== cur.dentistId) throw new BookingError("slot_taken");
+  }
   await sweepExpiredHolds(tx, dentistId, range, now, id);
   await withSlotTaken(async () => {
     await tx.update(entries).set({ dentistId, during: range, updatedAt: now }).where(eq(entries.id, id));
