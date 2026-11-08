@@ -20,6 +20,8 @@
     "user:create": "tsx --env-file-if-exists=.env.local scripts/create-user.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@radix-ui/react-dialog": "^1.3.1",
     "better-auth": "^1.7.18",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.5",
