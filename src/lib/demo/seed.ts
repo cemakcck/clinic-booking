@@ -32,7 +32,7 @@ export function mulberry32(seed: number): () => number {
 const MIN = 60_000;
 /** Public free slots (30-min probe) the seed leaves on guarded days: the guarantee of 8 plus headroom. */
 const SEED_FLOOR = 8 + 4;
-const FILL_PROBABILITY = 0.85;
+const FILL_PROBABILITY = 0.6;
 const CANCELLED_RATE = 0.05;
 const NO_SHOW_RATE = 0.08;
 

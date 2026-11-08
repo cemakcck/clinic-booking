@@ -1,9 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { and, count, eq, sql } from "drizzle-orm";
-import { clinicData } from "@/content/clinic-data";
 import { resetDemo } from "@/lib/demo/reset";
 import { seedClinic } from "@/lib/demo/seed";
 import { countPublicSlots } from "@/lib/booking/availability";
+import { clinicData } from "@/content/clinic-data";
+import { effectiveHours } from "@/lib/slots/engine";
+import { addDays, atIstanbul, weekdayOf } from "@/lib/time";
 import { dentists, entries, patients, treatments } from "@/lib/db/schema";
 import { closeTestDb, resetTables, testDb, TEST_DATABASE_URL } from "./helpers/db";
 
@@ -45,6 +47,46 @@ describe("seed", () => {
         );
       expect(n).toBeGreaterThanOrEqual(20);
     }
+  });
+
+  it("fills about 70% of open minutes on non-guarded days", async () => {
+    await seedClinic(db, { now: NOW });
+    const rows = await db.select().from(entries).where(and(eq(entries.kind, "appointment"), eq(entries.active, true)));
+    const idBySlug = new Map((await db.select().from(dentists)).map((d) => [d.slug, d.id]));
+    let booked = 0;
+    let capacity = 0;
+    for (let i = 0; i < 6; i++) {
+      const date = addDays("2026-11-16", i); // next Mon-Sat, past the guarded days
+      if (date === "2026-11-19") continue; // leave day
+      const wd = weekdayOf(date);
+      const ch = clinicData.clinicHours.find((h) => h.weekday === wd)!;
+      for (const d of clinicData.dentists) {
+        const wh = d.hours.find((h) => h.weekday === wd);
+        const eh = effectiveHours(
+          ch.open ? { start: ch.open, end: ch.close! } : null,
+          wh ? { start: wh.start, end: wh.end } : null,
+          clinicData.lunch,
+        );
+        if (!eh) continue;
+        const from = atIstanbul(date, eh.open.start).getTime();
+        const to = atIstanbul(date, eh.open.end).getTime();
+        const lunchMin = eh.breaks.reduce(
+          (n, b) => n + (atIstanbul(date, b.end).getTime() - atIstanbul(date, b.start).getTime()) / 60000,
+          0,
+        );
+        capacity += (to - from) / 60000 - lunchMin;
+        for (const r of rows) {
+          if (r.dentistId !== idBySlug.get(d.slug)) continue;
+          if (r.during.start.getTime() >= from && r.during.start.getTime() < to) {
+            booked += (r.during.end.getTime() - r.during.start.getTime()) / 60000;
+          }
+        }
+      }
+    }
+    const fraction = booked / capacity;
+    console.log("fill fraction", fraction.toFixed(3));
+    expect(fraction).toBeGreaterThan(0.6);
+    expect(fraction).toBeLessThan(0.8);
   });
 
   it("includes a surgery block, a leave day and 2 callbacks", async () => {
