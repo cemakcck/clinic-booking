@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Klinik Randevu",
+    "description": "Randevunuzu çevrimiçi alın."
+  },
+  "home": {
+    "title": "Randevunuzu alın"
+  },
+  "language": {
+    "label": "Dil",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "back": "Ana sayfaya dön"
+  }
+}

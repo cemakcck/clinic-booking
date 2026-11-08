@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "title": "Clinic Booking",
+    "description": "Book your appointment online."
+  },
+  "home": {
+    "title": "Book your appointment"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to home"
+  }
+}
