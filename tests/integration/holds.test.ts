@@ -127,10 +127,10 @@ describe("confirm", () => {
     const b = await confirm(h);
     expect(b.appointmentId).toBe(a.appointmentId);
     expect([a.created, b.created]).toEqual([true, false]);
-    expect(b.manageToken).not.toBe(a.manageToken);
+    expect(b.manageToken).toBe(a.manageToken);
     const rows = await db.select().from(entries).where(eq(entries.kind, "appointment"));
     expect(rows).toHaveLength(1);
-    expect(rows[0].manageTokenHash).toBe(hashToken(b.manageToken));
+    expect(rows[0].manageTokenHash).toBe(hashToken(a.manageToken));
   });
 
   it("concurrent double submit yields one appointment", async () => {

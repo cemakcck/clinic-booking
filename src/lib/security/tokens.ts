@@ -8,3 +8,8 @@ export function newToken(): string {
 export function hashToken(t: string): string {
   return createHash("sha256").update(t).digest("hex");
 }
+
+/** Deterministic manage token for a hold, so a repeated confirm returns the already-emailed link. */
+export function deriveManageToken(holdToken: string): string {
+  return createHash("sha256").update(`manage:${holdToken}`).digest("base64url");
+}

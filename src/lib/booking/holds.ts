@@ -11,7 +11,7 @@ import { BookingError } from "./errors";
 import { insertEntry, updateEntryRange } from "./entries";
 import { upsertPatient } from "./patients";
 import { checkAndRecordRate } from "@/lib/security/rate-limit";
-import { hashToken, newToken } from "@/lib/security/tokens";
+import { deriveManageToken, hashToken, newToken } from "@/lib/security/tokens";
 
 const MIN = 60_000;
 
@@ -172,14 +172,8 @@ export async function confirmBooking(
       created,
     });
 
-    const manageToken = newToken();
-    if (row.kind === "appointment") {
-      await tx
-        .update(entries)
-        .set({ manageTokenHash: hashToken(manageToken), updatedAt: q.now })
-        .where(eq(entries.id, row.id));
-      return result(manageToken, false);
-    }
+    const manageToken = deriveManageToken(q.holdToken);
+    if (row.kind === "appointment") return result(manageToken, false);
     if (row.kind !== "hold") throw new BookingError("not_found");
 
     if (row.expiresAt && row.expiresAt <= q.now) {
