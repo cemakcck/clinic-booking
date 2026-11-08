@@ -10,7 +10,7 @@ export default function NotFound() {
       <Link href="/" className="mb-10">
         <Logo name={clinic.shortName} />
       </Link>
-      <p aria-hidden="true" className="text-7xl font-bold tracking-tight text-accent">
+      <p aria-hidden="true" className="text-7xl font-bold tracking-tight text-brand-2">
         404
       </p>
       <h1 className="mt-4 text-2xl font-bold text-ink">{t("title")}</h1>

@@ -67,6 +67,7 @@ Direction **A, "Calm clinical"**, from the mockup:
 - Rounded corners (about 14px), soft panels, generous whitespace, clear buttons.
 - Calendar status colours, as in the mockup: booked blue, arrived green, no-show red, "just booked by you" amber highlight, blocked time grey hatching.
 - Light mode only. Responsive down to phone width. WCAG AA contrast (adjust token shades slightly if a pairing fails, and note it).
+  - *Note (Task 18 sweep):* the decorative "404" numeral on the not-found page used mint accent `#7fd1c1` on soft `#eef6f4` (1.6:1); it now uses secondary teal `#1f8a7f` (3.8:1, AA for large text). No palette token changed.
 - The demo banner sits above everything, dark ink background, with the role pills and "Data resets nightly".
 - The clinic photo in the mockup is a placeholder. Use licence-free imagery (e.g. Unsplash) or tasteful illustration, with no real clinic's photos.
 
