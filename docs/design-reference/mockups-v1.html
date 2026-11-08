@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinic booking — mockups v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --page:#e9e9e6; }
+  /* Direction A — calm clinical */
+  body.a { --bg:#ffffff; --soft:#eef6f4; --ink:#10302e; --mute:#5d7472; --brand:#0f5e5a; --brand2:#1f8a7f; --accent:#7fd1c1; --line:#d9e6e3;
+           --head:'Plus Jakarta Sans',system-ui,sans-serif; --body:'Plus Jakarta Sans',system-ui,sans-serif; --radius:14px; }
+  /* Direction B — warm boutique */
+  body.b { --bg:#fbf7f1; --soft:#f2e9dc; --ink:#1f2433; --mute:#6e6a63; --brand:#1f2a44; --brand2:#b8563a; --accent:#e9b79f; --line:#e6dccd;
+           --head:'Fraunces',Georgia,serif; --body:'Inter',system-ui,sans-serif; --radius:6px; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); font-family:var(--body); color:var(--ink); }
+  .wrap { max-width:1240px; margin:0 auto; padding:28px 20px 80px; }
+  .intro h1 { font:600 26px/1.2 system-ui,sans-serif; margin:0 0 6px; color:#222; }
+  .intro p { margin:0 0 16px; color:#555; font:15px/1.5 system-ui,sans-serif; max-width:800px; }
+  .switch { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
+  .switch button { font:600 14px system-ui,sans-serif; padding:10px 16px; border-radius:10px; border:2px solid #bbb; background:#fff; cursor:pointer; }
+  .switch button.on { border-color:#222; background:#222; color:#fff; }
+  .sec-label { font:700 12px/1 system-ui,sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#666; margin:40px 0 10px; }
+  .sec-label b { color:#222; }
+  .note { font:14px/1.5 system-ui,sans-serif; color:#555; margin:8px 0 0; max-width:900px; }
+
+  .frame { background:var(--bg); border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08); border:1px solid #d6d6d2; }
+  .chrome { height:30px; background:#f3f3f1; border-bottom:1px solid #ddd; display:flex; align-items:center; gap:6px; padding:0 12px; }
+  .chrome i { width:10px; height:10px; border-radius:50%; background:#d5d5d0; display:block; }
+  .chrome span { margin-left:12px; font:12px system-ui; color:#888; background:#fff; padding:3px 10px; border-radius:6px; }
+
+  .demo { background:var(--ink); color:#fff; font:500 13px/1 var(--body); padding:9px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .demo .pill { padding:6px 11px; border-radius:999px; border:1px solid rgba(255,255,255,.35); }
+  .demo .pill.on { background:#fff; color:var(--ink); font-weight:700; }
+  .demo .reset { margin-left:auto; opacity:.7; }
+
+  .nav { display:flex; align-items:center; gap:26px; padding:18px 36px; border-bottom:1px solid var(--line); font-size:14px; }
+  .logo { font:600 21px var(--head); color:var(--brand); display:flex; align-items:center; gap:8px; }
+  .logo .tooth { width:26px; height:26px; border-radius:50% 50% 45% 45%; background:var(--brand); display:inline-block; }
+  .nav .links { display:flex; gap:22px; color:var(--mute); }
+  .nav .right { margin-left:auto; display:flex; gap:14px; align-items:center; }
+  .btn { background:var(--brand); color:#fff; border:none; padding:11px 18px; border-radius:var(--radius); font:600 14px var(--body); }
+  .btn.alt { background:var(--brand2); }
+  .btn.ghost { background:transparent; color:var(--brand); border:1.5px solid var(--brand); }
+  .lang { font-size:13px; color:var(--mute); } .lang b { color:var(--ink); }
+
+  .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:36px; padding:48px 36px 40px; align-items:center; }
+  .hero h2 { font:600 46px/1.08 var(--head); margin:0 0 16px; letter-spacing:-.01em; }
+  .hero h2 em { font-style:normal; color:var(--brand2); }
+  .hero p { color:var(--mute); font-size:17px; line-height:1.55; margin:0 0 24px; max-width:480px; }
+  .hero .ctas { display:flex; gap:12px; }
+  .trust { display:flex; gap:22px; margin-top:28px; font-size:13px; color:var(--mute); }
+  .trust b { display:block; font:600 22px var(--head); color:var(--ink); }
+  .photo { height:330px; border-radius:calc(var(--radius) * 1.6); background:
+      radial-gradient(circle at 70% 30%, var(--accent), transparent 60%), linear-gradient(135deg, var(--soft), var(--line)); position:relative; }
+  .photo .next { position:absolute; left:-24px; bottom:26px; background:var(--bg); border-radius:var(--radius); padding:14px 16px; box-shadow:0 12px 30px rgba(0,0,0,.12); font-size:13px; }
+  .photo .next b { display:block; font-size:15px; margin-top:3px; }
+  .photo .lbl { position:absolute; right:16px; top:14px; font-size:12px; color:var(--mute); }
+  .treat { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:0 36px 40px; }
+  .treat div { background:var(--soft); border-radius:var(--radius); padding:16px; font-size:13px; color:var(--mute); }
+  .treat b { display:block; color:var(--ink); font:600 16px var(--head); margin-bottom:4px; }
+
+  /* booking */
+  .book { display:grid; grid-template-columns:1fr 300px; gap:28px; padding:30px 36px 40px; }
+  .steps { display:flex; gap:8px; margin-bottom:22px; font-size:13px; }
+  .steps span { padding:7px 12px; border-radius:999px; background:var(--soft); color:var(--mute); }
+  .steps span.done { color:var(--brand); }
+  .steps span.on { background:var(--brand); color:#fff; font-weight:600; }
+  .book h3 { font:600 26px var(--head); margin:0 0 4px; }
+  .book .sub { color:var(--mute); font-size:14px; margin:0 0 18px; }
+  .days { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px; }
+  .days div { border:1.5px solid var(--line); border-radius:var(--radius); padding:10px 4px; text-align:center; font-size:12px; color:var(--mute); }
+  .days div b { display:block; font-size:19px; color:var(--ink); margin-top:2px; }
+  .days div.on { border-color:var(--brand); background:var(--soft); }
+  .days div.off { opacity:.4; text-decoration:line-through; }
+  .grp { font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--mute); margin:14px 0 8px; }
+  .slots { display:flex; flex-wrap:wrap; gap:8px; }
+  .slots span { border:1.5px solid var(--line); border-radius:var(--radius); padding:9px 14px; font-size:14px; font-weight:500; }
+  .slots span.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .slots span.taken { color:#bbb; text-decoration:line-through; border-style:dashed; }
+  .summary { background:var(--soft); border-radius:calc(var(--radius) * 1.3); padding:20px; font-size:14px; align-self:start; }
+  .summary h4 { margin:0 0 14px; font:600 18px var(--head); }
+  .summary .row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); }
+  .summary .row span { color:var(--mute); }
+  .summary .btn { width:100%; margin-top:16px; }
+  .summary small { display:block; color:var(--mute); margin-top:10px; line-height:1.4; }
+
+  /* receptionist */
+  .app { display:grid; grid-template-columns:210px 1fr; min-height:520px; }
+  .side { border-right:1px solid var(--line); padding:20px 16px; font-size:14px; background:var(--soft); }
+  .side .logo { font-size:17px; margin-bottom:22px; }
+  .side a { display:block; padding:9px 10px; border-radius:var(--radius); color:var(--mute); margin-bottom:2px; }
+  .side a.on { background:var(--bg); color:var(--ink); font-weight:600; }
+  .side .who { margin-top:26px; padding-top:14px; border-top:1px solid var(--line); font-size:12px; color:var(--mute); }
+  .main { padding:18px 22px; }
+  .toolbar { display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .toolbar h3 { font:600 22px var(--head); margin:0 12px 0 0; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; font-size:13px; }
+  .seg span { padding:7px 12px; } .seg span.on { background:var(--ink); color:#fff; }
+  .toolbar .sp { margin-left:auto; display:flex; gap:8px; }
+  .toolbar .btn { padding:8px 14px; font-size:13px; }
+  .stats { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .stats div { border:1px solid var(--line); border-radius:var(--radius); padding:8px 12px; font-size:12px; color:var(--mute); }
+  .stats b { font-size:16px; color:var(--ink); margin-right:4px; }
+  .cal { display:grid; grid-template-columns:52px repeat(3,1fr); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; font-size:12px; }
+  .cal .h { padding:10px; font-weight:600; border-bottom:1px solid var(--line); border-left:1px solid var(--line); background:var(--soft); display:flex; align-items:center; gap:8px; }
+  .cal .h .av { width:22px; height:22px; border-radius:50%; background:var(--accent); }
+  .cal .h:first-child { border-left:none; }
+  .times { display:grid; grid-template-rows:repeat(8,52px); }
+  .times div { color:var(--mute); padding:3px 6px; border-top:1px solid var(--line); font-size:11px; }
+  .col { position:relative; border-left:1px solid var(--line);
+         background-image:repeating-linear-gradient(to bottom, transparent 0 51px, var(--line) 51px 52px); }
+  .ev { position:absolute; left:5px; right:5px; border-radius:8px; padding:6px 8px; line-height:1.3; overflow:hidden; border-left:4px solid; }
+  .ev b { display:block; font-size:12px; }
+  .ev.booked { background:#e7eefc; border-color:#3d6fd8; }
+  .ev.arrived { background:#e3f5ea; border-color:#2e9d5b; }
+  .ev.noshow { background:#fbe7e5; border-color:#d0463b; }
+  .ev.new { background:#fff4d6; border-color:#e0a412; box-shadow:0 0 0 2px #e0a412; }
+  .ev.block { background:repeating-linear-gradient(45deg, #f1f1ef 0 6px, #e4e4e0 6px 12px); border-color:#999; color:#666; }
+  .ev.drag { opacity:.55; border-style:dashed; }
+  .now { position:absolute; left:0; right:0; height:2px; background:#d0463b; z-index:2; }
+  .legend { display:flex; gap:14px; margin-top:10px; font-size:12px; color:var(--mute); flex-wrap:wrap; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+
+  /* bottom row */
+  .row3 { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; }
+  .phone { width:300px; border-radius:34px; border:9px solid #1d1d1d; background:var(--bg); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.12); }
+  .phone .top { padding:16px 18px 10px; }
+  .phone .top small { color:var(--mute); font-size:12px; }
+  .phone .top h4 { margin:2px 0 0; font:600 22px var(--head); }
+  .pl { padding:0 12px 16px; }
+  .pi { display:flex; gap:12px; padding:12px; border-radius:var(--radius); margin-bottom:8px; background:var(--soft); font-size:13px; align-items:center; }
+  .pi .t { font-weight:700; width:44px; }
+  .pi .s { margin-left:auto; font-size:11px; padding:3px 8px; border-radius:999px; background:var(--bg); color:var(--mute); }
+  .pi.cur { background:var(--brand); color:#fff; } .pi.cur .s { color:var(--brand); }
+  .dash { padding:20px; }
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+  .tile { border:1px solid var(--line); border-radius:var(--radius); padding:14px; font-size:12px; color:var(--mute); }
+  .tile b { display:block; font:600 26px var(--head); color:var(--ink); margin:4px 0 2px; }
+  .tile .up { color:#2e9d5b; } .tile .dn { color:#d0463b; }
+  .bars { display:flex; align-items:flex-end; gap:6px; height:120px; border:1px solid var(--line); border-radius:var(--radius); padding:14px 14px 26px; position:relative; }
+  .bars div { flex:1; background:var(--brand2); border-radius:4px 4px 0 0; opacity:.85; position:relative; }
+  .bars div span { position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--mute); }
+  .bars .ttl { position:absolute; top:10px; left:14px; font-size:12px; color:var(--mute); }
+  .log { margin-top:12px; border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; font:12px/1.7 ui-monospace,monospace; color:var(--mute); }
+  .log b { color:var(--ink); }
+</style>
+</head>
+<body class="a">
+<div class="wrap">
+  <div class="intro">
+    <h1>Clinic booking: first mockups</h1>
+    <p>One fictional Istanbul dental clinic, shown in two visual directions. Switch between them below; every screen updates. "Nova Dental" is a placeholder name. Look at the <b>flow and layout</b> first, then tell me which direction feels right.</p>
+  </div>
+  <div class="switch">
+    <button id="ba" class="on" data-choice="a" onclick="setTheme('a')">A · Calm clinical (white + teal, modern sans)</button>
+    <button id="bb" data-choice="b" onclick="setTheme('b')">B · Warm boutique (cream + navy + terracotta, serif headings)</button>
+  </div>
+
+  <!-- 1. Public homepage -->
+  <div class="sec-label"><b>1 · Patient</b> · public homepage</div>
+  <div class="frame">
+    <div class="chrome"><i></i><i></i><i></i><span>clinic.cemakcicek.com/en</span></div>
+    <div class="demo">Demo, not a real clinic · Try it as: <span class="pill on">Patient</span><span class="pill">Receptionist</span><span class="pill">Dentist</span><span class="reset">Data resets nightly 03:00</span></div>
+    <div class="nav">
+      <div class="logo"><span class="tooth"></span>Nova Dental</div>
+      <div class="links"><span>Treatments</span><span>Our dentists</span><span>Prices</span><span>International patients</span><span>Contact</span></div>
+      <div class="right"><span class="lang"><b>EN</b> · TR</span><button class="btn">Book appointment</button></div>
+    </div>
+    <div class="hero">
+      <div>
+        <h2>A calmer way to <em>fix your smile</em> in Istanbul.</h2>
+        <p>Check-ups, whitening, implants and aligners by four specialist dentists in Kadıköy. Pick a real free time online in under a minute.</p>
+        <div class="ctas"><button class="btn">Book appointment</button><button class="btn ghost">See treatments</button></div>
+        <div class="trust"><div><b>4.9★</b>reviews (demo)</div><div><b>4</b>dentists</div><div><b>EN · TR</b>spoken</div></div>
+      </div>
+      <div class="photo"><span class="lbl">clinic photo</span><div class="next">Next free slot<b>Today, 15:30 · Dr. Aydın</b></div></div>
+    </div>
+    <div class="treat">
+      <div><b>Check-up & cleaning</b>30 min · from ₺1,200</div>
+      <div><b>Whitening</b>60 min · from ₺4,500</div>
+      <div><b>Implant consult</b>45 min · free</div>
+      <div><b>Clear aligners</b>45 min · from ₺2,000</div>
+    </div>
+  </div>
+  <p class="note">"Next free slot" is computed live from the real schedule. It's a small detail that shows the system works before anyone clicks.</p>
+
+  <!-- 2. Booking flow -->
+  <div class="sec-label"><b>2 · Patient</b> · booking, step 3 of 4</div>
+  <div class="frame">
+    <div class="chrome"><i></i><i></i><i></i><span>clinic.cemakcicek.com/en/book</span></div>
+    <div class="book">
+      <div>
+        <div class="steps"><span class="done">✓ Treatment</span><span class="done">✓ Dentist</span><span class="on">3 · Time</span><span>4 · Your details</span></div>
+        <h3>Pick a time</h3>
+        <p class="sub">Only genuinely free times are shown. Times are Istanbul time (GMT+3).</p>
+        <div class="days">
+          <div>Mon<b>9</b></div><div class="on">Tue<b>10</b></div><div>Wed<b>11</b></div><div>Thu<b>12</b></div><div>Fri<b>13</b></div><div>Sat<b>14</b></div><div class="off">Sun<b>15</b></div>
+        </div>
+        <div class="grp">Morning</div>
+        <div class="slots"><span class="taken">09:00</span><span>09:30</span><span class="taken">10:00</span><span>10:30</span><span>11:30</span></div>
+        <div class="grp">Afternoon</div>
+        <div class="slots"><span>13:30</span><span class="on">14:00</span><span>15:00</span><span>15:30</span><span>16:30</span></div>
+      </div>
+      <div class="summary">
+        <h4>Your appointment</h4>
+        <div class="row"><span>Treatment</span>Whitening · 60 min</div>
+        <div class="row"><span>Dentist</span>Dr. Elif Aydın</div>
+        <div class="row"><span>When</span>Tue 10 Nov, 14:00</div>
+        <div class="row"><span>Price</span>from ₺4,500</div>
+        <button class="btn">Continue</button>
+        <small>The slot is held for you for 5 minutes while you fill in your details.</small>
+      </div>
+    </div>
+  </div>
+  <p class="note">Struck-through times are taken (shown for this mockup only; the real flow simply hides them). Step 4 asks for name, phone and email, then shows a confirmation with "Add to calendar" and a manage-booking link.</p>
+
+  <!-- 3. Receptionist -->
+  <div class="sec-label"><b>3 · Receptionist</b> · day calendar</div>
+  <div class="frame">
+    <div class="chrome"><i></i><i></i><i></i><span>clinic.cemakcicek.com/en/staff/calendar</span></div>
+    <div class="demo">Demo · Try it as: <span class="pill">Patient</span><span class="pill on">Receptionist</span><span class="pill">Dentist</span><span class="reset">Data resets nightly 03:00</span></div>
+    <div class="app">
+      <div class="side">
+        <div class="logo"><span class="tooth"></span>Nova Dental</div>
+        <a class="on">Calendar</a><a>Patients</a><a>Requests <b>2</b></a><a>Dentists & hours</a><a>Treatments</a><a>Dashboard</a><a>Reminders log</a>
+        <div class="who">Signed in as<br><b>Zeynep (Receptionist)</b></div>
+      </div>
+      <div class="main">
+        <div class="toolbar">
+          <h3>Tue, 10 Nov</h3>
+          <div class="seg"><span>‹</span><span>Today</span><span>›</span></div>
+          <div class="seg"><span class="on">Day</span><span>Week</span></div>
+          <div class="sp"><button class="btn ghost">Block time</button><button class="btn">+ Walk-in</button></div>
+        </div>
+        <div class="stats"><div><b>14</b>appointments</div><div><b>5</b>arrived</div><div><b>1</b>no-show</div><div><b>3</b>free slots left</div></div>
+        <div class="cal">
+          <div class="h">Time</div>
+          <div class="h"><span class="av"></span>Dr. Elif Aydın</div>
+          <div class="h"><span class="av"></span>Dr. Murat Kaya</div>
+          <div class="h"><span class="av"></span>Dr. Selin Demir</div>
+          <div class="times"><div>09:00</div><div>10:00</div><div>11:00</div><div>12:00</div><div>13:00</div><div>14:00</div><div>15:00</div><div>16:00</div></div>
+          <div class="col">
+            <div class="ev arrived" style="top:4px;height:44px"><b>Ayşe Y.</b>Check-up · arrived</div>
+            <div class="ev noshow" style="top:56px;height:44px"><b>John P.</b>Cleaning · no-show</div>
+            <div class="ev arrived" style="top:108px;height:70px"><b>Mehmet A.</b>Filling</div>
+            <div class="ev block" style="top:212px;height:48px"><b>Lunch</b></div>
+            <div class="ev new" style="top:264px;height:48px"><b>You (demo) ★ new</b>Whitening · 14:00</div>
+            <div class="now" style="top:250px"></div>
+          </div>
+          <div class="col">
+            <div class="ev booked" style="top:30px;height:70px"><b>Sarah K.</b>Implant consult</div>
+            <div class="ev booked" style="top:160px;height:44px"><b>Can T.</b>Check-up</div>
+            <div class="ev drag" style="top:316px;height:44px;background:#e7eefc;border-color:#3d6fd8"><b>Can T.</b>dragging… 15:00</div>
+            <div class="ev block" style="top:212px;height:48px"><b>Lunch</b></div>
+            <div class="now" style="top:250px"></div>
+          </div>
+          <div class="col">
+            <div class="ev block" style="top:4px;height:410px"><b>Off: annual leave</b>blocked by admin</div>
+            <div class="now" style="top:250px"></div>
+          </div>
+        </div>
+        <div class="legend"><span><i style="background:#3d6fd8"></i>Booked</span><span><i style="background:#2e9d5b"></i>Arrived</span><span><i style="background:#d0463b"></i>No-show</span><span><i style="background:#e0a412"></i>Just booked by you</span><span><i style="background:#aaa"></i>Blocked</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="note">The "magic moment": the booking the visitor made as a patient appears here, highlighted. Drag a block to move it; the database refuses any move that would overlap.</p>
+
+  <!-- 4. Dentist + Dashboard -->
+  <div class="sec-label"><b>4 · Dentist</b> on a phone &nbsp;·&nbsp; <b>5 · Dashboard</b> (phase 2)</div>
+  <div class="row3">
+    <div class="phone">
+      <div class="top"><small>Good afternoon,</small><h4>Dr. Aydın</h4><small>Tue 10 Nov · 6 patients</small></div>
+      <div class="pl">
+        <div class="pi"><span class="t">09:00</span>Ayşe Y. · Check-up<span class="s">done</span></div>
+        <div class="pi"><span class="t">10:00</span>John P. · Cleaning<span class="s">no-show</span></div>
+        <div class="pi"><span class="t">11:00</span>Mehmet A. · Filling<span class="s">done</span></div>
+        <div class="pi cur"><span class="t">14:00</span>You (demo) · Whitening<span class="s">next</span></div>
+        <div class="pi"><span class="t">15:30</span>Leyla B. · Aligners<span class="s">booked</span></div>
+        <div class="pi"><span class="t">16:30</span>Emre S. · Check-up<span class="s">booked</span></div>
+      </div>
+    </div>
+    <div class="frame">
+      <div class="dash">
+        <div class="tiles">
+          <div class="tile">Bookings this week<b>62</b><span class="up">▲ 12% vs last week</span></div>
+          <div class="tile">No-show rate<b>4.8%</b><span class="dn">▼ since reminders</span></div>
+          <div class="tile">Online vs phone<b>71%</b>booked online</div>
+          <div class="tile">Chair utilisation<b>83%</b>of working hours</div>
+        </div>
+        <div class="bars"><span class="ttl">Busiest hours</span>
+          <div style="height:40%"><span>9</span></div><div style="height:65%"><span>10</span></div><div style="height:80%"><span>11</span></div><div style="height:30%"><span>12</span></div><div style="height:55%"><span>13</span></div><div style="height:90%"><span>14</span></div><div style="height:75%"><span>15</span></div><div style="height:60%"><span>16</span></div>
+        </div>
+        <div class="log"><b>Reminders log</b> (demo)<br>
+          ✉ 09 Nov 14:00 · email sent · Whitening reminder → you@…<br>
+          ◌ 09 Nov 14:00 · SMS <i>simulated</i> · "Nova Dental: yarın 14:00 randevunuz var…"</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function setTheme(t){
+    document.body.className = t;
+    document.getElementById('ba').classList.toggle('on', t==='a');
+    document.getElementById('bb').classList.toggle('on', t==='b');
+    if (window.brainstorm) window.brainstorm.choice(t, { text: t==='a' ? 'Calm clinical' : 'Warm boutique' });
+  }
+</script>
+</body>
+</html>
