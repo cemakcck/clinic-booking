@@ -25,6 +25,15 @@ test("reschedule, then cancel", async ({ page }) => {
   await page.getByRole("button", { name: "Reschedule" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pick a new time");
+  // Move to a day at least 2 days out, so the new time is past the 24-hour online-change cutoff
+  // at any hour (the picker opens on the soonest day, whose last slot can be under 24 h away).
+  const minDate = istanbulPlus(2);
+  await expect(page.getByTestId("slot").first()).toBeVisible();
+  const dates = await page.locator('[data-testid="day"]:not([disabled])').evaluateAll((els) => els.map((e) => e.getAttribute("data-date") ?? ""));
+  const pick = dates.find((d) => d >= minDate);
+  if (!pick) throw new Error(`no open day on or after ${minDate} in the strip: ${dates.join(", ")}`);
+  await page.locator(`[data-testid="day"][data-date="${pick}"]`).click();
+  await expect(page.locator(`[data-testid="day"][data-date="${pick}"]`)).toHaveAttribute("aria-pressed", "true");
   const slots = page.getByTestId("slot");
   await expect(slots.first()).toBeVisible();
   const target = (await slots.last().innerText()).trim();

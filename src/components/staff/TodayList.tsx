@@ -161,7 +161,7 @@ export default function TodayList({
                 data-next={isNext ? "true" : undefined}
                 aria-current={isNext ? "true" : undefined}
                 className={`rounded-card border-l-4 p-3 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
-                  isNext ? "border-ink bg-brand text-white" : `${STATUS_STYLE[it.status]} text-ink ${done ? "opacity-80" : ""}`
+                  isNext ? "border-ink bg-brand text-white" : `${STATUS_STYLE[it.status]} text-ink`
                 }`}
               >
                 <div className="flex items-center gap-3 text-[14px]">
