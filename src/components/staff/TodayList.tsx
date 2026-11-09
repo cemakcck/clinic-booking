@@ -150,7 +150,6 @@ export default function TodayList({
         <ol aria-label={t("list")} className="mt-4 grid gap-2">
           {items.map((it) => {
             const isNext = it.id === nextId;
-            const done = it.status === "completed" || it.status === "no_show";
             return (
               <li
                 key={it.id}

@@ -9,8 +9,23 @@ export type DbOrTx = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 const DEFAULT_URL = "postgres://clinic:clinic@localhost:5433/clinic";
 
+/**
+ * postgres-js options for a connection URL. A transaction-mode pooler (Supabase's, on port 6543,
+ * used from serverless) hands each transaction to any backend, so prepared statements must be off.
+ * Advisory locks here are transaction-scoped (pg_advisory_xact_lock), which such a pooler supports.
+ */
+export function clientOptions(url: string): postgres.Options<Record<string, never>> {
+  let port = "";
+  try {
+    port = new URL(url).port;
+  } catch {
+    // not a URL: keep the defaults
+  }
+  return { max: 10, onnotice: () => {}, prepare: port !== "6543" };
+}
+
 export function createDb(url: string = process.env.DATABASE_URL ?? DEFAULT_URL): Db {
-  const client = postgres(url, { max: 10, onnotice: () => {} });
+  const client = postgres(url, clientOptions(url));
   return drizzle(client, { schema });
 }
 
