@@ -110,6 +110,18 @@ describe("demo mode masks other visitors' contact details", () => {
     expect(row.email).toBe("a•••@mail.test");
   });
 
+  it("patients: partial phone digits do not find masked rows (no digit-by-digit oracle)", async () => {
+    await appt("online", "11:00");
+    expect(await searchPatients(db, reception, "2233", now)).toHaveLength(0);
+    expect(await searchPatients(db, reception, "532111223", now)).toHaveLength(0);
+    // The full number still finds them (the receptionist already knows it), with or without 0 / +90.
+    expect(await searchPatients(db, reception, "0532 111 22 33", now)).toHaveLength(1);
+    expect(await searchPatients(db, reception, "+90 532 111 22 33", now)).toHaveLength(1);
+    // Unmasked rows (this browser's own booking) keep partial matching.
+    const [only] = await db.select({ id: entries.id }).from(entries);
+    expect(await searchPatients(db, reception, "2233", now, { mine: [only.id] })).toHaveLength(1);
+  });
+
   it("patients: live mode never masks", async () => {
     process.env.DEMO_MODE = "";
     await appt("online", "11:00");

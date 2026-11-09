@@ -9,7 +9,7 @@ import { normalizePhone } from "@/lib/booking/patients";
 import { notifyPatient } from "@/lib/booking/notify";
 import { loadDayData, resolveSelection, type DayData } from "@/lib/booking/wizard";
 import { dentistName } from "@/lib/public/queries";
-import { MINE_COOKIE, mineCookieOptions, parseMine, withMine } from "@/lib/demo/mine";
+import { encodeMine, MINE_COOKIE, mineCookieOptions, parseMine, withMine } from "@/lib/demo/mine";
 import { isDemo } from "@/lib/demo/mode";
 import { clientIp } from "@/lib/security/client-ip";
 import { hashIp } from "@/lib/security/hash-ip";
@@ -174,7 +174,7 @@ export async function confirm(input: {
   if (isDemo()) {
     const jar = await cookies();
     const list = withMine(parseMine(jar.get(MINE_COOKIE)?.value), booked.appointmentId);
-    jar.set(MINE_COOKIE, JSON.stringify(list), mineCookieOptions);
+    jar.set(MINE_COOKIE, encodeMine(list), mineCookieOptions);
   }
 
   const pageLocale = asLocale(input.locale);

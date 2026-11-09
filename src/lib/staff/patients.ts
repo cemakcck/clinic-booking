@@ -79,7 +79,8 @@ const apptScope = (actor: Actor, patientId: string | typeof patients.id) =>
 
 /**
  * Patients by name (case- and Turkish-diacritic-insensitive substring) or phone (the query's digits
- * contained in the E.164 digits; a leading 0 is the national prefix and is dropped, 3+ digits).
+ * contained in the E.164 digits; a leading 0 is the national prefix and is dropped, 3+ digits;
+ * in demo mode, masked rows need the whole number).
  * Empty query lists everyone. Name order, at most PATIENT_LIMIT. Dentists get only patients who
  * have an appointment with them, with counts of their own appointments (cancelled ones excluded).
  */
@@ -95,7 +96,14 @@ export async function searchPatients(
   const digits = q.replace(/\D/g, "").replace(/^0+/, "");
   const match: SQL[] = [];
   if (term) match.push(sql`${foldSql(patients.name)} like ${`%${term}%`}`);
-  if (digits.length >= 3) match.push(sql`regexp_replace(${patients.phoneE164}, '\\D', '', 'g') like ${`%${digits}%`}`);
+  if (digits.length >= 3) {
+    const phoneDigits = sql`regexp_replace(${patients.phoneE164}, '\\D', '', 'g')`;
+    const partial = sql`${phoneDigits} like ${`%${digits}%`}`;
+    // Demo: a masked row (another visitor's number) matches only on the whole number, with or
+    // without the country code, so partial searches can't rebuild it digit by digit.
+    const whole = sql`(${phoneDigits} = ${digits} or ${phoneDigits} = ${`90${digits}`})`;
+    match.push(isDemo() ? sql`(${partial} and (not ${foreignOnline(patients.id, opts)} or ${whole}))` : partial);
+  }
   const text = q.trim() === "" ? undefined : match.length ? sql`(${sql.join(match, sql` or `)})` : sql`false`;
 
   const live = (cond: SQL) =>

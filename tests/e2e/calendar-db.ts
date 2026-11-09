@@ -289,6 +289,20 @@ export async function weeklyFreeStart(dentistId: number, date: string, weeks: nu
   return hit;
 }
 
+/**
+ * The first weekday from the quiet date on where `dentistId` has a 30-minute start free on that day
+ * and the same weekday for the next `weeks` weeks (a weekly block that must not hit appointments).
+ */
+export async function weeklyFreeDay(dentistId: number, weeks: number): Promise<{ date: string; from: string }> {
+  let date = await quietDate();
+  for (let n = 0; n < 40; n++, date = addDays(date, 1)) {
+    if (weekdayOf(date) === 0 || weekdayOf(date) === 6) continue;
+    const from = await weeklyFreeStart(dentistId, date, weeks).catch(() => null);
+    if (from) return { date, from };
+  }
+  throw new Error(`no weekday with a start free for ${weeks + 1} weeks`);
+}
+
 export function addMinutes(time: string, n: number): string {
   const [h, m] = time.split(":").map(Number);
   const t = h * 60 + m + n;

@@ -12,7 +12,7 @@ import {
   freeDay,
   minutesLeftToday,
   quietDate,
-  weeklyFreeStart,
+  weeklyFreeDay,
 } from "./calendar-db";
 
 const rand = () => Math.random().toString(36).slice(2, 8);
@@ -195,8 +195,7 @@ test.describe("own calendar", () => {
 
   test("dentist repeats a block weekly for 3 weeks", async ({ page }) => {
     const id = await elifId();
-    const { date } = await freeDay(id);
-    const from = await weeklyFreeStart(id, date, 2);
+    const { date, from } = await weeklyFreeDay(id, 2);
     const note = `e2e-${rand()}`;
     try {
       await asDentist(page, weekUrl(date, id));

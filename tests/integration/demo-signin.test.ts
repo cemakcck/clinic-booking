@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { resetDemo } from "@/lib/demo/reset";
 import { entries } from "@/lib/db/schema";
 import { istanbulDateOf } from "@/lib/time";
+import { encodeMine } from "@/lib/demo/mine";
 import { closeTestDb, testDb, TEST_DATABASE_URL } from "./helpers/db";
+
+process.env.BETTER_AUTH_SECRET ??= "integration-mine-secret-0123456789abcdef";
 
 // The server action's own logic: the demo gate, which account it signs into and where it
 // redirects. Better Auth itself is mocked here (real sign-ins: auth.test.ts and the e2e suite).
@@ -77,7 +80,7 @@ describe("demoSignIn", () => {
   });
 
   it("magic moment: the receptionist lands on the day of this browser's newest booking", async () => {
-    h.cookie = JSON.stringify(["00000000-0000-4000-8000-000000000000", mineId]);
+    h.cookie = encodeMine(["00000000-0000-4000-8000-000000000000", mineId]);
     await expect(demoSignIn("receptionist")).rejects.toThrow(`REDIRECT /en/staff/calendar?date=${mineDate}`);
     // Only the receptionist gets it; the dentist still goes to today.
     await expect(demoSignIn("dentist")).rejects.toThrow(/^REDIRECT \/en\/staff\/today$/);

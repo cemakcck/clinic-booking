@@ -10,7 +10,7 @@ export default function WeekGrid(props: GridProps) {
       renderHead={(c) => (
         <span className="flex min-w-0 flex-col leading-tight">
           <span className="truncate">{c.title}</span>
-          {c.sub && <span className="text-[11px] font-medium text-mute">{c.sub}</span>}
+          {c.sub && <span className={`text-[11px] font-medium ${c.isToday ? "text-brand" : "text-mute"}`}>{c.sub}</span>}
         </span>
       )}
     />
