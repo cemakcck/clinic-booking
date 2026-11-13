@@ -18,12 +18,14 @@ describe("smsText", () => {
   });
   it("TR tomorrow", () => {
     expect(smsText("tr", { dentistName: dentist, start: tomorrow }, now)).toBe(
-      `${clinic.shortName}: yarın 14:00'te ${dentist} ile randevunuz var. Değişiklik için: ${p}`,
+      `${clinic.shortName}: yarın saat 14:00, ${dentist} ile randevunuz var. Değişiklik için: ${p}`,
     );
   });
   it("non-tomorrow uses the short date", () => {
     expect(smsText("en", { dentistName: dentist, start: later }, now)).toContain("on 20 Nov at 09:30");
-    expect(smsText("tr", { dentistName: dentist, start: later }, now)).toContain("20 Kasım 09:30'te");
+    expect(smsText("tr", { dentistName: dentist, start: later }, now)).toBe(
+      `${clinic.shortName}: 20 Kasım saat 09:30, ${dentist} ile randevunuz var. Değişiklik için: ${p}`,
+    );
   });
   it("tomorrow is an Istanbul calendar day (late evening UTC still tomorrow)", () => {
     const lateNow = atIstanbul("2026-11-17", "23:30");

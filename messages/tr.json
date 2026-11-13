@@ -40,8 +40,8 @@
     }
   },
   "sms": {
-    "reminderTomorrow": "{clinic}: yarın {time}'te {dentist} ile randevunuz var. Değişiklik için: {phone}",
-    "reminderDate": "{clinic}: {date} {time}'te {dentist} ile randevunuz var. Değişiklik için: {phone}"
+    "reminderTomorrow": "{clinic}: yarın saat {time}, {dentist} ile randevunuz var. Değişiklik için: {phone}",
+    "reminderDate": "{clinic}: {date} saat {time}, {dentist} ile randevunuz var. Değişiklik için: {phone}"
   },
   "public": {
     "nav": {
