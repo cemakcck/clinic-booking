@@ -36,7 +36,8 @@
       "subjectTomorrow": "Reminder: your appointment tomorrow at {time}",
       "subjectDate": "Reminder: your appointment on {date} at {time}",
       "intro": "This is a friendly reminder of your upcoming appointment.",
-      "manage": "To change or cancel, use the link in your confirmation email, or call us at {phone}."
+      "manage": "To change or cancel, use the link in your confirmation email, or call us at {phone}.",
+      "manageCall": "To change or cancel, please call us at {phone}."
     }
   },
   "sms": {

@@ -76,5 +76,27 @@ describe("renderEmail", () => {
         expect(m.subject).not.toMatch(/[\r\n]/);
       }
     });
+
+    it("inside the 24 h manage cutoff it says to call the clinic, not to use the link", () => {
+      const soon = { ...r, now: atIstanbul("2026-11-09", "16:00") }; // 22 h before the start
+      const en = renderEmail("appointment_reminder", "en", soon);
+      const tr = renderEmail("appointment_reminder", "tr", soon);
+      for (const part of [en.text, en.html]) {
+        expect(part).toContain(`To change or cancel, please call us at ${clinic.phoneDisplay}.`);
+        expect(part).not.toContain("confirmation email");
+      }
+      for (const part of [tr.text, tr.html]) {
+        expect(part).toContain(`Değiştirmek veya iptal etmek için lütfen bizi ${clinic.phoneDisplay} numarasından arayın.`);
+        expect(part).not.toContain("onay e-postanızdaki");
+      }
+    });
+
+    it("more than 24 h ahead it still points to the confirmation email link", () => {
+      // r.now is 28 h before the start (a demo "send now" reminder).
+      const en = renderEmail("appointment_reminder", "en", r);
+      const tr = renderEmail("appointment_reminder", "tr", r);
+      expect(en.text).toContain("use the link in your confirmation email");
+      expect(tr.text).toContain("onay e-postanızdaki bağlantıyı kullanın");
+    });
   });
 });

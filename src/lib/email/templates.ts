@@ -2,6 +2,7 @@ import { createTranslator } from "next-intl";
 import en from "../../../messages/en.json";
 import tr from "../../../messages/tr.json";
 import { clinic } from "@/config/clinic";
+import { MANAGE_CUTOFF_HOURS } from "@/config/booking";
 import { formatLongDate, formatSlotTime, isTomorrow } from "@/lib/time";
 import type { Locale } from "@/i18n/routing";
 
@@ -58,7 +59,12 @@ export function renderEmail(
   // Reminders never carry a manage link: only the token hash is stored, so it cannot be rebuilt.
   const manage =
     d.manageUrl && kind !== "booking_cancelled" && kind !== "appointment_reminder" ? d.manageUrl : undefined;
-  const note = kind === "appointment_reminder" ? t("reminder.manage", { phone: clinic.phoneDisplay }) : undefined;
+  // Inside the manage cutoff the phase 1 link refuses changes, so the reminder says to call instead.
+  const insideCutoff = d.start.getTime() - (d.now ?? new Date()).getTime() < MANAGE_CUTOFF_HOURS * 3_600_000;
+  const note =
+    kind === "appointment_reminder"
+      ? t(insideCutoff ? "reminder.manageCall" : "reminder.manage", { phone: clinic.phoneDisplay })
+      : undefined;
   const footer = t("footer", { phone: clinic.phoneDisplay, email: clinic.email });
 
   const text = [

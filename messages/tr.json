@@ -36,7 +36,8 @@
       "subjectTomorrow": "Hatırlatma: yarın {time} randevunuz",
       "subjectDate": "Hatırlatma: {date} {time} randevunuz",
       "intro": "Yaklaşan randevunuzu hatırlatmak isteriz.",
-      "manage": "Değiştirmek veya iptal etmek için onay e-postanızdaki bağlantıyı kullanın veya bizi {phone} numarasından arayın."
+      "manage": "Değiştirmek veya iptal etmek için onay e-postanızdaki bağlantıyı kullanın veya bizi {phone} numarasından arayın.",
+      "manageCall": "Değiştirmek veya iptal etmek için lütfen bizi {phone} numarasından arayın."
     }
   },
   "sms": {
