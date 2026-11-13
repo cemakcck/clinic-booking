@@ -44,6 +44,9 @@ test("receptionist sees the whole clinic and can switch periods", async ({ page 
     await expect(tile.getByTestId("tile-value")).toHaveText(/^(\d[\d,]*|\d+%|—)$/);
     await expect(tile.getByTestId("tile-compare")).toContainText("last week");
   }
+  // The seeded history gives last week real numbers, so at least one tile compares against them.
+  const compares = (await tiles.getByTestId("tile-compare").allTextContents()).map((c) => c.trim());
+  expect(compares.some((c) => /^(↑|↓|No change)/.test(c) && !c.includes("Nothing to compare"))).toBe(true);
 
   // Utilisation: one row per active dentist, each with its percentage written out.
   await expect(page.getByRole("heading", { level: 2, name: "Chair utilisation" })).toBeVisible();

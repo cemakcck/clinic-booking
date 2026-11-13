@@ -155,6 +155,14 @@ const patientNames: [string, "en" | "tr"][] = [
   ["Sarah Mitchell", "en"], ["Daniel Brooks", "en"], ["Anna Kowalski", "en"], ["Lucas Moreau", "en"],
   ["Priya Nair", "en"], ["James Walker", "en"], ["Marta Rossi", "en"], ["Jonas Berg", "en"],
   ["Olivia Hart", "en"], ["Tariq Hassan", "en"],
+  ["Fatma Öztürk", "tr"], ["Ali Kaya", "tr"], ["Seda Yavuz", "tr"], ["Murat Çakır", "tr"],
+  ["Deniz Acar", "tr"], ["Sinem Uçar", "tr"], ["Kaan Erdoğan", "tr"], ["Derya Kılıç", "tr"],
+  ["Volkan Şen", "tr"], ["Büşra Altun", "tr"], ["Serkan Güler", "tr"], ["Pınar Aydemir", "tr"],
+  ["Uğur Kaplan", "tr"], ["Tuğba Çetin", "tr"], ["Onur Demirci", "tr"], ["Esra Bozkurt", "tr"],
+  ["Yusuf Ateş", "tr"], ["Hande Sarı", "tr"],
+  ["Emma Schneider", "en"], ["Noah Fischer", "en"], ["Sofia Lindqvist", "en"], ["Liam O'Connor", "en"],
+  ["Chloe Dubois", "en"], ["Mateo García", "en"], ["Hannah Weber", "en"], ["Ethan Clarke", "en"],
+  ["Yuki Tanaka", "en"], ["Leila Haddad", "en"], ["Viktor Novak", "en"], ["Grace Bennett", "en"],
 ];
 
 const fold = (s: string) =>
