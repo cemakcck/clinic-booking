@@ -40,6 +40,11 @@ test("a visitor books, switches to Receptionist and sends their own reminders no
   await expect(sms.getByTestId("reminder-contact")).toHaveText("+905321112233");
   await expect(mail.getByTestId("reminder-contact")).toHaveText(email);
   await expect(sms.getByRole("link")).toHaveAttribute("href", /\/en\/staff\/calendar\?view=day&date=\d{4}-\d{2}-\d{2}&open=[0-9a-f-]{36}$/);
+  // Every row that isn't this visitor's own (seeded online and staff-created bookings alike) is masked.
+  const others = page.getByTestId("reminder").filter({ hasNotText: name }).getByTestId("reminder-contact");
+  expect(await others.count()).toBeGreaterThan(0);
+  const unmasked = (await others.allTextContents()).filter((c) => /\d{4}|@/.test(c) && !c.includes("•"));
+  expect(unmasked).toEqual([]);
 
   expect(await serious(page)).toEqual([]);
 

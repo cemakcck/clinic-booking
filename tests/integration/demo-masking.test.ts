@@ -55,7 +55,7 @@ async function appt(source: "online" | "staff", from: string, phone = PHONE) {
 
 const phoneOf = (list: { id: string; patientPhone?: string }[], id: string) => list.find((e) => e.id === id)?.patientPhone;
 
-describe("demo mode masks other visitors' contact details", () => {
+describe("demo mode shows full contact details only for the visitor's own bookings", () => {
   it("calendar: an online appointment is masked, unless it is in this browser's mine list", async () => {
     const a = await appt("online", "11:00");
     const day = await getCalendarDay(db, reception, D, now, { mine: [] });
@@ -71,10 +71,14 @@ describe("demo mode masks other visitors' contact details", () => {
     expect(phoneOf(week.entries, a.id)).toBe(MASKED_PHONE);
   });
 
-  it("calendar: staff-created appointments are not masked", async () => {
+  it("calendar: staff-created appointments are masked too, unless in this browser's mine list", async () => {
+    // Another demo visitor signed in as staff may have typed someone's real number.
     const a = await appt("staff", "11:00");
     const day = await getCalendarDay(db, reception, D, now, { mine: [] });
-    expect(phoneOf(day.entries, a.id)).toBe(PHONE);
+    expect(phoneOf(day.entries, a.id)).toBe(MASKED_PHONE);
+    expect(day.entries.find((e) => e.id === a.id)?.contactMasked).toBe(true);
+    const own = await getCalendarDay(db, reception, D, now, { mine: [a.id] });
+    expect(phoneOf(own.entries, a.id)).toBe(PHONE);
   });
 
   it("calendar: live mode never masks", async () => {
@@ -107,6 +111,32 @@ describe("demo mode masks other visitors' contact details", () => {
     const attacker = await appt("online", "14:00");
     expect(victim.patientId).toBe(attacker.patientId);
     const [row] = await searchPatients(db, reception, "", now, { mine: [attacker.id] });
+    expect(row.email).toBe("a•••@mail.test");
+  });
+
+  it("patients: a patient with only staff-created bookings is masked unless one is mine", async () => {
+    const a = await appt("staff", "11:00");
+    const [row] = await searchPatients(db, reception, "", now);
+    expect(row.phone).toBe(MASKED_PHONE);
+    expect(row.email).toBe("a•••@mail.test");
+    expect(row.contactMasked).toBe(true);
+    const detail = await getPatientAppointments(db, reception, a.patientId, now);
+    expect(detail.patient.phone).toBe(MASKED_PHONE);
+    const [own] = await searchPatients(db, reception, "", now, { mine: [a.id] });
+    expect(own.phone).toBe(PHONE);
+  });
+
+  it("patients: a patient with no appointments at all is masked in demo mode", async () => {
+    await db.insert(patients).values({ name: "No Visits", phoneE164: PHONE, email: "nv@mail.test", locale: "en" });
+    const [row] = await searchPatients(db, reception, "", now);
+    expect(row.phone).toBe(MASKED_PHONE);
+  });
+
+  it("patients: still masked when a staff-created booking for the same patient isn't mine", async () => {
+    const other = await appt("staff", "11:00");
+    const mine = await appt("online", "14:00");
+    expect(other.patientId).toBe(mine.patientId);
+    const [row] = await searchPatients(db, reception, "", now, { mine: [mine.id] });
     expect(row.email).toBe("a•••@mail.test");
   });
 

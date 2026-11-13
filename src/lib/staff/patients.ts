@@ -42,15 +42,19 @@ export type PatientRow = {
 export type MaskOpts = { mine?: string[] };
 
 /**
- * Demo mode: true when the patient has an online booking that is not this browser's, i.e. their
- * stored phone and email may have been typed by another visitor. Live mode: always false.
+ * Demo mode: true unless the patient's details are the visitor's own, i.e. they have at least one
+ * appointment in this browser's mine list and none that isn't (any other booking, online or
+ * staff-created, may have been typed by another visitor). Live mode: always false.
  */
-function foreignOnline(patientId: string | typeof patients.id, opts: MaskOpts): SQL<boolean> {
+function notOwn(patientId: string | typeof patients.id, opts: MaskOpts): SQL<boolean> {
   if (!isDemo()) return sql<boolean>`false`;
   const mine = (opts.mine ?? []).filter((x) => UUID.test(x));
-  const notMine = mine.length ? sql`and ${entries.id}::text not in (${sql.join(mine.map((m) => sql`${m}`), sql`, `)})` : sql``;
-  // eq() (not a bare template) so drizzle qualifies the outer patients.id inside the subquery.
-  return sql<boolean>`exists (select 1 from ${entries} where ${eq(entries.patientId, patientId)} and ${entries.kind} = 'appointment' and ${entries.source} = 'online' ${notMine})`;
+  if (mine.length === 0) return sql<boolean>`true`;
+  const list = sql.join(mine.map((m) => sql`${m}`), sql`, `);
+  // eq() (not a bare template) so drizzle qualifies the outer patients.id inside the subqueries.
+  const appt = sql`${eq(entries.patientId, patientId)} and ${entries.kind} = 'appointment'`;
+  return sql<boolean>`(not exists (select 1 from ${entries} where ${appt} and ${entries.id}::text in (${list}))
+    or exists (select 1 from ${entries} where ${appt} and ${entries.id}::text not in (${list})))`;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -102,7 +106,7 @@ export async function searchPatients(
     // Demo: a masked row (another visitor's number) matches only on the whole number, with or
     // without the country code, so partial searches can't rebuild it digit by digit.
     const whole = sql`(${phoneDigits} = ${digits} or ${phoneDigits} = ${`90${digits}`})`;
-    match.push(isDemo() ? sql`(${partial} and (not ${foreignOnline(patients.id, opts)} or ${whole}))` : partial);
+    match.push(isDemo() ? sql`(${partial} and (not ${notOwn(patients.id, opts)} or ${whole}))` : partial);
   }
   const text = q.trim() === "" ? undefined : match.length ? sql`(${sql.join(match, sql` or `)})` : sql`false`;
 
@@ -124,7 +128,7 @@ export async function searchPatients(
       email: patients.email,
       upcoming: upcoming.mapWith(Number),
       past: past.mapWith(Number),
-      masked: foreignOnline(patients.id, opts).mapWith(Boolean),
+      masked: notOwn(patients.id, opts).mapWith(Boolean),
     })
     .from(patients)
     .where(and(text, scope))
@@ -164,7 +168,7 @@ export async function getPatientAppointments(
       name: patients.name,
       phone: patients.phoneE164,
       email: patients.email,
-      masked: foreignOnline(patients.id, opts).mapWith(Boolean),
+      masked: notOwn(patients.id, opts).mapWith(Boolean),
     })
     .from(patients)
     .where(eq(patients.id, patientId));

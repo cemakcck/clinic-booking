@@ -29,8 +29,8 @@ const validDate = (d: string) => DATE.test(d) && !Number.isNaN(atIstanbul(d, "00
  * The reminders log (spec §5): finished reminders created between two Istanbul dates (inclusive),
  * newest first, at most REMINDER_LOG_LIMIT. Receptionist and admin only. `pending` rows (an email
  * claimed but not yet, or never, sent) are left out. In the public demo another visitor's phone or
- * email is masked here, so the raw value never reaches the page; the visitor's own bookings
- * (`mine`, the signed demo_mine cookie) and staff-created ones are shown, as on the calendar.
+ * email is masked here, so the raw value never reaches the page; only the visitor's own bookings
+ * (`mine`, the signed demo_mine cookie) are shown in full, as on the calendar.
  */
 export async function listReminders(
   db: DbOrTx,
@@ -56,7 +56,6 @@ export async function listReminders(
       body: reminders.body,
       patientName: sql<string>`coalesce(${entries.contactName}, ${patients.name})`,
       entryId: entries.id,
-      entrySource: entries.source,
       startsAt: reminders.startsAt,
       dentistName: dentists.name,
     })
@@ -71,7 +70,7 @@ export async function listReminders(
   const demo = isDemo();
   const mine = new Set(q.mine);
   return rows.map((r) => {
-    const masked = demo && r.entrySource === "online" && !mine.has(r.entryId);
+    const masked = demo && !mine.has(r.entryId);
     const contact = r.toAddress && masked ? (r.channel === "sms" ? maskPhone(r.toAddress) : maskEmail(r.toAddress)) : r.toAddress;
     return {
       id: r.id,

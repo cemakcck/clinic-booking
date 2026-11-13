@@ -89,7 +89,6 @@ async function loadEntries(
       nameTr: treatments.nameTr,
       patientName: contactName,
       patientPhone: patients.phoneE164,
-      source: entries.source,
     })
     .from(entries)
     .leftJoin(treatments, eq(treatments.id, entries.treatmentId))
@@ -124,8 +123,9 @@ async function loadEntries(
       };
     }
     const editable = can(actor, "appointment.manage", { dentistId: r.dentistId });
-    // Public demo: other visitors' online bookings never carry their real phone number.
-    const masked = demo && r.source === "online" && !mine.has(r.id);
+    // Public demo: only this browser's own bookings carry the real phone number. Staff-created ones
+    // are masked too: another visitor signed in as staff may have typed someone's real number.
+    const masked = demo && !mine.has(r.id);
     const phone = r.patientPhone ? (masked ? maskPhone(r.patientPhone) : r.patientPhone) : undefined;
     return {
       ...base,

@@ -146,6 +146,17 @@ describe("listReminders", () => {
     expect(live.every((r) => r.contact === "+905321112233" || r.contact === "ayse@mail.test")).toBe(true);
   });
 
+  it("masks staff-created bookings in demo mode too: only the visitor's own are shown in full", async () => {
+    vi.stubEnv("DEMO_MODE", "1");
+    const staff = await appt({ start: T("2026-11-20", "10:00"), source: "staff" });
+    await logRow(staff, { channel: "sms", createdAt: T("2026-11-10", "09:00") });
+    await logRow(staff, { channel: "email", createdAt: T("2026-11-10", "09:01") });
+    const rows = await listReminders(db, reception, ALL);
+    expect(rows.map((r) => r.contact).sort()).toEqual(["+90 5•• ••• •• 33", "a•••@mail.test"]);
+    const own = await listReminders(db, reception, { ...ALL, mine: [staff] });
+    expect(own.map((r) => r.contact).sort()).toEqual(["+905321112233", "ayse@mail.test"]);
+  });
+
   it("log keeps the patient's SMS language", async () => {
     const id = await appt({ start: at(20), locale: "tr" });
     await runReminders(db, now);
