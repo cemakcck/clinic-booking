@@ -6,6 +6,7 @@ export const ACTIONS = [
   "appointment.status",
   "block.manage",
   "requests.view",
+  "reminders.view",
   "patients.view",
   "settings.view",
   "settings.edit",
@@ -22,6 +23,7 @@ const RULES: Record<Action, Record<Actor["role"], Rule>> = {
   "appointment.status": { receptionist: true, admin: true, dentist: "own" },
   "block.manage": { receptionist: true, admin: true, dentist: "own" },
   "requests.view": { receptionist: true, admin: true, dentist: false },
+  "reminders.view": { receptionist: true, admin: true, dentist: false },
   // Dentists see the list, but the query filters it to their own patients.
   "patients.view": { receptionist: true, admin: true, dentist: true },
   "settings.view": { receptionist: false, admin: true, dentist: false },

@@ -28,6 +28,7 @@ export default async function StaffLayout({
     { href: "/staff/today", label: t("nav.today"), show: actor.role === "dentist" },
     { href: "/staff/calendar", label: t("nav.calendar"), show: can(actor, "calendar.viewAll") },
     { href: "/staff/requests", label: t("nav.requests"), show: can(actor, "requests.view"), badge: newRequests },
+    { href: "/staff/reminders", label: t("nav.reminders"), show: can(actor, "reminders.view") },
     { href: "/staff/patients", label: t("nav.patients"), show: can(actor, "patients.view") },
     { href: "/staff/settings", label: t("nav.settings"), show: can(actor, "settings.view") },
   ];

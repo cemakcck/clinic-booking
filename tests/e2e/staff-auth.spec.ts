@@ -31,6 +31,7 @@ test("Receptionist pill lands on the calendar, signed in as Zeynep", async ({ pa
   const nav = page.getByRole("navigation", { name: "Staff" });
   await expect(nav.getByRole("link", { name: "Calendar" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Requests" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Reminders" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Patients" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Settings" })).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
@@ -47,6 +48,7 @@ test("Dentist pill lands on today; the sidebar has no Requests or Settings", asy
   await expect(nav.getByRole("link", { name: "Calendar" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Patients" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Requests" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Reminders" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "Settings" })).toHaveCount(0);
 });
 

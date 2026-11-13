@@ -58,7 +58,7 @@ test("staff login, en and tr", async ({ page }) => {
   await sweep(page, ["/en/staff/login", "/tr/staff/login"]);
 });
 
-test("receptionist pages: calendar, requests, patients", async ({ page }) => {
+test("receptionist pages: calendar, requests, reminders, patients", async ({ page }) => {
   const date = await quietDate();
   await signIn(page, "Receptionist");
   await sweep(
@@ -67,6 +67,7 @@ test("receptionist pages: calendar, requests, patients", async ({ page }) => {
       `/${l}/staff/calendar?date=${date}`,
       `/${l}/staff/calendar?view=week&date=${date}`,
       `/${l}/staff/requests`,
+      `/${l}/staff/reminders`,
       `/${l}/staff/patients`,
     ]),
   );

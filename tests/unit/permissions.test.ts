@@ -23,6 +23,7 @@ const TABLE: Record<Action, [boolean, boolean, boolean, boolean, boolean]> = {
   "appointment.status": [true, true, false, true, false],
   "block.manage": [true, true, false, true, false],
   "requests.view": [true, true, false, false, false],
+  "reminders.view": [true, true, false, false, false],
   "patients.view": [true, true, true, true, true],
   "settings.view": [false, true, false, false, false],
   "settings.edit": [false, true, false, false, false],
@@ -52,6 +53,13 @@ describe("can (spec §7.1)", () => {
 
   it("dentist can set status on own appointment", () => {
     expect(can(dentist, "appointment.status", own)).toBe(true);
+  });
+
+  it("reminders.view is allowed for receptionist and admin, not dentist", () => {
+    expect(can(receptionist, "reminders.view")).toBe(true);
+    expect(can(admin, "reminders.view")).toBe(true);
+    expect(can(dentist, "reminders.view")).toBe(false);
+    expect(can(dentist, "reminders.view", own)).toBe(false);
   });
 
   it("receptionist cannot edit settings", () => {

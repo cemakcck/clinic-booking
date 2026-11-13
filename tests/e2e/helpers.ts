@@ -26,9 +26,10 @@ export async function toDetails(page: Page) {
 
 /**
  * Books a check-up with anyone and lands on the confirmation. With `date` (YYYY-MM-DD) the day
- * picker opens there, e.g. a week out so the booking is still changeable online.
+ * picker opens there, e.g. a week out so the booking is still changeable online. `name` and
+ * `email` override the default patient details.
  */
-export async function bookAnyCheckup(page: Page, opts: { date?: string } = {}) {
+export async function bookAnyCheckup(page: Page, opts: { date?: string; name?: string; email?: string } = {}) {
   if (opts.date) {
     await page.goto(`/en/book?treatment=checkup&dentist=any&date=${opts.date}`);
   } else {
@@ -39,9 +40,9 @@ export async function bookAnyCheckup(page: Page, opts: { date?: string } = {}) {
   }
   const s = await toDetails(page);
   await expect(page.getByTestId("hold-countdown")).toContainText(/\d:\d{2}/);
-  await page.getByLabel("Full name").fill("Ayşe Yılmaz");
+  await page.getByLabel("Full name").fill(opts.name ?? "Ayşe Yılmaz");
   await page.getByLabel("Phone number").fill("0532 111 2233");
-  await page.getByLabel("Email", { exact: true }).fill(email());
+  await page.getByLabel("Email", { exact: true }).fill(opts.email ?? email());
   await page.getByLabel(/I agree/).check();
   await page.getByRole("button", { name: "Confirm booking" }).click();
   await expect(page).toHaveURL(/\/en\/book\/done\?t=[\w-]{20,}/);
