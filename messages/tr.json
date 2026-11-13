@@ -359,6 +359,7 @@
     "skip": "İçeriğe geç",
     "nav": {
       "label": "Personel",
+      "dashboard": "Panel",
       "calendar": "Takvim",
       "today": "Bugün",
       "requests": "Talepler",
@@ -388,6 +389,63 @@
       "demoAs": "{role} olarak giriş yap",
       "backToSite": "Web sitesine dön",
       "rateLimited": "Çok fazla giriş denemesi yapıldı. Lütfen 15 dakika bekleyip tekrar deneyin."
+    },
+    "dashboard": {
+      "metaTitle": "Panel",
+      "title": "Panel",
+      "leadClinic": "Kliniğin geneline bir bakış. Tüm saatler İstanbul saatidir.",
+      "leadOwn": "Yalnızca sizin randevularınız. Tüm saatler İstanbul saatidir.",
+      "periodLabel": "Dönem",
+      "period": {
+        "week": "Bu hafta",
+        "4w": "Son 4 hafta",
+        "3m": "Son 3 ay"
+      },
+      "headline": "Temel göstergeler",
+      "tile": {
+        "appointments": "Randevular",
+        "noShowRate": "Gelmeme oranı",
+        "onlineShare": "Online payı",
+        "cancellations": "İptaller"
+      },
+      "note": {
+        "appointments": "İptal edilenler hariç",
+        "noShowRate": "Saati gelmiş randevular içinde",
+        "onlineShare": "{online} online, {staff} personel tarafından",
+        "cancellations": "İptal edilen randevular"
+      },
+      "vs": {
+        "week": "geçen haftaya göre",
+        "4w": "önceki 4 haftaya göre",
+        "3m": "önceki 3 aya göre"
+      },
+      "none": {
+        "week": "Geçen haftayla karşılaştırılacak veri yok",
+        "4w": "Önceki 4 haftayla karşılaştırılacak veri yok",
+        "3m": "Önceki 3 ayla karşılaştırılacak veri yok"
+      },
+      "noChange": "Değişiklik yok ({vs})",
+      "up": "Artış",
+      "down": "Düşüş",
+      "points": "{n} puan",
+      "utilisation": {
+        "title": "Koltuk doluluğu",
+        "lead": "Her hekimin çalışma saatlerinin (öğle arası, tatiller ve bloklar düşüldükten sonra) ne kadarının dolu olduğu.",
+        "weekNote": "Haftanın geri kalanı için alınmış randevular da dahildir",
+        "detail": "{working} saatin {booked} saati dolu",
+        "noHours": "Bu dönemde çalışma saati yok",
+        "empty": "Aktif hekim yok."
+      },
+      "heatmap": {
+        "title": "En yoğun saatler",
+        "lead": "Klinik açık saatlerinde, güne ve saate göre başlayan randevular. Her hücrede sayı yazılıdır.",
+        "caption": "Güne ve saate göre başlayan randevular",
+        "weekday": "Gün",
+        "closed": "Kapalı",
+        "fewer": "Az",
+        "more": "Çok",
+        "empty": "Klinik çalışma saatleri tanımlı değil."
+      }
     },
     "today": {
       "metaTitle": "Bugün",

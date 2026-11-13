@@ -58,12 +58,14 @@ test("staff login, en and tr", async ({ page }) => {
   await sweep(page, ["/en/staff/login", "/tr/staff/login"]);
 });
 
-test("receptionist pages: calendar, requests, reminders, patients", async ({ page }) => {
+test("receptionist pages: dashboard, calendar, requests, reminders, patients", async ({ page }) => {
   const date = await quietDate();
   await signIn(page, "Receptionist");
   await sweep(
     page,
     LOCALES.flatMap((l) => [
+      `/${l}/staff/dashboard`,
+      `/${l}/staff/dashboard?period=3m`,
       `/${l}/staff/calendar?date=${date}`,
       `/${l}/staff/calendar?view=week&date=${date}`,
       `/${l}/staff/requests`,
@@ -73,9 +75,9 @@ test("receptionist pages: calendar, requests, reminders, patients", async ({ pag
   );
 });
 
-test("dentist today", async ({ page }) => {
+test("dentist today and dashboard", async ({ page }) => {
   await signIn(page, "Dentist");
-  await sweep(page, ["/en/staff/today", "/tr/staff/today"]);
+  await sweep(page, ["/en/staff/today", "/tr/staff/today", "/en/staff/dashboard", "/tr/staff/dashboard"]);
 });
 
 test("admin settings", async ({ page }) => {

@@ -359,6 +359,7 @@
     "skip": "Skip to content",
     "nav": {
       "label": "Staff",
+      "dashboard": "Dashboard",
       "calendar": "Calendar",
       "today": "Today",
       "requests": "Requests",
@@ -388,6 +389,63 @@
       "demoAs": "Sign in as {role}",
       "backToSite": "Back to the website",
       "rateLimited": "Too many sign-in attempts. Please wait 15 minutes and try again."
+    },
+    "dashboard": {
+      "metaTitle": "Dashboard",
+      "title": "Dashboard",
+      "leadClinic": "How the whole clinic is doing. All times are Istanbul time.",
+      "leadOwn": "Your own appointments only. All times are Istanbul time.",
+      "periodLabel": "Period",
+      "period": {
+        "week": "This week",
+        "4w": "Last 4 weeks",
+        "3m": "Last 3 months"
+      },
+      "headline": "Key numbers",
+      "tile": {
+        "appointments": "Appointments",
+        "noShowRate": "No-show rate",
+        "onlineShare": "Online share",
+        "cancellations": "Cancellations"
+      },
+      "note": {
+        "appointments": "Not counting cancelled ones",
+        "noShowRate": "Of appointments that have already started",
+        "onlineShare": "{online} online, {staff} made by staff",
+        "cancellations": "Cancelled appointments"
+      },
+      "vs": {
+        "week": "vs last week",
+        "4w": "vs previous 4 weeks",
+        "3m": "vs previous 3 months"
+      },
+      "none": {
+        "week": "Nothing to compare with last week",
+        "4w": "Nothing to compare with the previous 4 weeks",
+        "3m": "Nothing to compare with the previous 3 months"
+      },
+      "noChange": "No change {vs}",
+      "up": "Up",
+      "down": "Down",
+      "points": "{n, plural, one {# pt} other {# pts}}",
+      "utilisation": {
+        "title": "Chair utilisation",
+        "lead": "Booked time as a share of each dentist's working hours, after lunch, holidays and blocks.",
+        "weekNote": "Includes appointments already booked for the rest of the week",
+        "detail": "{booked} h booked of {working} h",
+        "noHours": "No working hours in this period",
+        "empty": "No active dentists."
+      },
+      "heatmap": {
+        "title": "Busiest hours",
+        "lead": "Appointment starts by weekday and hour, over clinic opening hours. Every cell shows its count.",
+        "caption": "Appointment starts by weekday and hour",
+        "weekday": "Day",
+        "closed": "Closed",
+        "fewer": "Fewer",
+        "more": "More",
+        "empty": "The clinic has no opening hours set."
+      }
     },
     "today": {
       "metaTitle": "Today",

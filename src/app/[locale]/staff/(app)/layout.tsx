@@ -25,6 +25,7 @@ export default async function StaffLayout({
   const newRequests = await countNewRequests(await db(), actor);
 
   const items: (SidebarItem & { show: boolean })[] = [
+    { href: "/staff/dashboard", label: t("nav.dashboard"), show: can(actor, "dashboard.view") },
     { href: "/staff/today", label: t("nav.today"), show: actor.role === "dentist" },
     { href: "/staff/calendar", label: t("nav.calendar"), show: can(actor, "calendar.viewAll") },
     { href: "/staff/requests", label: t("nav.requests"), show: can(actor, "requests.view"), badge: newRequests },

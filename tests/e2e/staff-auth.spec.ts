@@ -29,6 +29,7 @@ test("Receptionist pill lands on the calendar, signed in as Zeynep", async ({ pa
   // The banner now marks Receptionist as current.
   await expect(banner(page).getByRole("button", { name: "Receptionist" })).toHaveAttribute("aria-current", "true");
   const nav = page.getByRole("navigation", { name: "Staff" });
+  await expect(nav.getByRole("link").first()).toHaveText("Dashboard");
   await expect(nav.getByRole("link", { name: "Calendar" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Requests" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Reminders" })).toBeVisible();
@@ -44,6 +45,7 @@ test("Dentist pill lands on today; the sidebar has no Requests or Settings", asy
   await expect(page).toHaveURL(/\/en\/staff\/today$/);
   await expect(page.getByTestId("signed-in")).toContainText("Elif");
   const nav = page.getByRole("navigation", { name: "Staff" });
+  await expect(nav.getByRole("link").first()).toHaveText("Dashboard");
   await expect(nav.getByRole("link", { name: "Today" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Calendar" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Patients" })).toBeVisible();
