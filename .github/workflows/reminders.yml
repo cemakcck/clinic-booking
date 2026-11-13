@@ -6,6 +6,9 @@ on:
     - cron: "*/15 * * * *"
   workflow_dispatch:
 
+# The job only calls a URL; it needs no access to the repository.
+permissions: {}
+
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -20,4 +23,4 @@ jobs:
             echo "::notice::REMINDERS_URL is not set; skipping."
             exit 0
           fi
-          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$REMINDERS_URL"
+          curl -fsS --max-time 60 -H "Authorization: Bearer $CRON_SECRET" "$REMINDERS_URL"
