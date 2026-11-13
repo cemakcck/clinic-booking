@@ -3,7 +3,7 @@ import { closedDates, dentists, entries, patients } from "@/lib/db/schema";
 import { closeTestDb, resetTables, seedFixture, T, testDb } from "./helpers/db";
 import type { Fixture } from "./helpers/fixture";
 import type { Actor } from "@/lib/auth/roles";
-import { dashboardData } from "@/lib/dashboard/metrics";
+import { dashboardData, utilisationEntries } from "@/lib/dashboard/metrics";
 
 const db = testDb();
 // Wed 2026-11-18 10:30 Istanbul. "week" = Mon 16 00:00 → now; previous = Mon 9 00:00 → Wed 11 10:30.
@@ -194,5 +194,20 @@ describe("dashboardData", () => {
       expect(r.heatmap.every((h) => h.count === 0)).toBe(true);
       expect(hasNaN(r)).toBe(false);
     }
+  });
+});
+
+describe("utilisationEntries", () => {
+  it("returns only the given dentists' rows inside the window", async () => {
+    await appt(fx.dentists.ayd, "2026-11-17", "10:00", "10:30"); // in window, ayd
+    await block(fx.dentists.ayd, "2026-11-17", "15:00", "16:00"); // in window, ayd
+    await appt(fx.dentists.ayd, "2026-12-01", "10:00", "10:30"); // out of window
+    await appt(fx.dentists.kay, "2026-11-17", "10:00", "10:30"); // other dentist
+    await appt(fx.dentists.kay, "2026-12-01", "10:00", "10:30"); // other dentist, out of window
+    await appt(fx.dentists.ayd, "2026-11-17", "11:00", "11:30", "cancelled");
+    const w = { start: T("2026-11-16", "00:00"), end: T("2026-11-23", "00:00") };
+    const rows = await utilisationEntries(db, w, [fx.dentists.ayd]);
+    expect(rows.map((r) => r.kind).sort()).toEqual(["appointment", "block"]);
+    expect(rows.every((r) => r.dentistId === fx.dentists.ayd)).toBe(true);
   });
 });

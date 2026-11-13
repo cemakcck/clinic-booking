@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import type { DbOrTx } from "@/lib/db/client";
 import { clinicHours, clinicSettings, closedDates, dentists, entries, workingHours } from "@/lib/db/schema";
 import { overlaps } from "@/lib/db/range";
@@ -98,6 +98,27 @@ function clippedMs(i: Interval, w: Window): number {
   return Math.max(0, e - s);
 }
 
+/**
+ * Rows utilisation needs for `dentistIds` within `w`: active blocks and non-cancelled appointments.
+ * Exported so a test can pin the WHERE clause's grouping (only these dentists, only this window).
+ */
+export async function utilisationEntries(db: DbOrTx, w: Window, dentistIds: number[]) {
+  if (dentistIds.length === 0) return [];
+  return db
+    .select({ dentistId: entries.dentistId, kind: entries.kind, during: entries.during })
+    .from(entries)
+    .where(
+      and(
+        inArray(entries.dentistId, dentistIds),
+        overlaps(entries.during, w),
+        or(
+          and(eq(entries.kind, "block"), eq(entries.active, true)),
+          and(eq(entries.kind, "appointment"), ne(entries.status, "cancelled")),
+        ),
+      ),
+    );
+}
+
 async function utilisation(db: DbOrTx, w: Window, dentistId: number | null): Promise<DashboardData["utilisation"]> {
   const ds = await db
     .select({ id: dentists.id, name: dentists.name })
@@ -121,16 +142,7 @@ async function utilisation(db: DbOrTx, w: Window, dentistId: number | null): Pro
       .select({ date: closedDates.date })
       .from(closedDates)
       .where(and(gte(closedDates.date, firstDate), lte(closedDates.date, lastDate))),
-    db
-      .select({ dentistId: entries.dentistId, kind: entries.kind, during: entries.during })
-      .from(entries)
-      .where(
-        and(
-          inArray(entries.dentistId, ids),
-          overlaps(entries.during, w),
-          sql`(${entries.kind} = 'block' and ${entries.active}) or (${entries.kind} = 'appointment' and ${ne(entries.status, "cancelled")})`,
-        ),
-      ),
+    utilisationEntries(db, w, ids),
   ]);
 
   const clinicBy = new Map<number, HoursRange | null>(
