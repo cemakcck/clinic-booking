@@ -40,9 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.superpowers/
-node_modules/
-
 # project
 !.env.example
 .superpowers/
