@@ -4,6 +4,7 @@ import { createDb } from "@/lib/db/client";
 import { sql } from "drizzle-orm";
 import { hashToken } from "@/lib/security/tokens";
 import { bookAnyCheckup } from "./helpers";
+import { E2E_DB_HOST } from "./constants";
 
 // Books 1 hold + 1 confirm per test (limits 20/h and 10/h per IP; globalSetup wipes rate_events).
 
@@ -74,7 +75,7 @@ test("the page is not indexable and sends no referrer", async ({ page }) => {
 test("within the cutoff the page asks to call the clinic", async ({ page }) => {
   const { token } = await bookAnyCheckup(page, { date: istanbulPlus(7) });
   // A visited appointment can't be changed online either.
-  const db = createDb("postgres://clinic:clinic@localhost:5433/clinic_e2e");
+  const db = createDb(`${E2E_DB_HOST}/clinic_e2e`);
   try {
     await db.execute(sql`UPDATE entries SET status = 'arrived' WHERE manage_token_hash = ${hashToken(token)}`);
   } finally {

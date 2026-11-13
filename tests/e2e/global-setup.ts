@@ -1,8 +1,6 @@
 import { createDb, migrateDb } from "@/lib/db/client";
 import { resetDemo } from "@/lib/demo/reset";
-import { E2E_DEMO_PASSWORD } from "./constants";
-
-const DB_HOST = "postgres://clinic:clinic@localhost:5433";
+import { E2E_DB_HOST as DB_HOST, E2E_DEMO_PASSWORD } from "./constants";
 
 export default async function globalSetup() {
   // Same password the servers get in playwright.config, so seeded staff accounts can sign in.

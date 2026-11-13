@@ -1,7 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { E2E_DEMO_PASSWORD } from "./tests/e2e/constants";
-
-const DB_HOST = "postgres://clinic:clinic@localhost:5433";
+import { E2E_DB_HOST as DB_HOST, E2E_DEMO_PASSWORD } from "./tests/e2e/constants";
 
 const server = (port: number, env: Record<string, string>) => ({
   command: `npx next dev -p ${port}`,

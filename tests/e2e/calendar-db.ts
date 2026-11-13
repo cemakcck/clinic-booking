@@ -4,9 +4,10 @@ import { callbackRequests, clinicHours, dentists, entries, patients, treatments 
 import { getDaySlots } from "@/lib/booking/availability";
 import { addDays, atIstanbul, istanbulDateOf, istanbulTimeOf, weekdayOf } from "@/lib/time";
 import { DEMO_FLOOR, PUBLIC_MIN_LEAD_MIN } from "@/config/booking";
+import { E2E_DB_HOST } from "./constants";
 
 /** The demo server's database (see playwright.config). */
-const URL = "postgres://clinic:clinic@localhost:5433/clinic_e2e";
+const URL = `${E2E_DB_HOST}/clinic_e2e`;
 
 export async function withDb<T>(fn: (db: Db) => Promise<T>): Promise<T> {
   const db = createDb(URL);
