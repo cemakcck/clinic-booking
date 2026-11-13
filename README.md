@@ -14,19 +14,22 @@ Next.js 16 · TypeScript · Tailwind CSS 4 · PostgreSQL 17 · Drizzle ORM · Be
 | ![Home page of the fictional Lindenya clinic, with the demo banner and the next free slot](docs/screenshots/home.png) | ![Step 3 of the booking flow: a day picker and free times in Istanbul time, with a summary card](docs/screenshots/booking.png) |
 | **Receptionist calendar** | **Dentist's day (phone)** |
 | ![Receptionist day view: one column per dentist, the patient's new booking highlighted](docs/screenshots/receptionist-calendar.png) | ![Dentist's today list on a phone, the next patient highlighted](docs/screenshots/dentist-today.png) |
+| **Dashboard** | **Reminders log** |
+| ![Staff dashboard: key numbers with comparisons, chair utilisation per dentist and a busiest-hours heatmap](docs/screenshots/dashboard.png) | ![Reminders log: SMS and email reminders with the patient, appointment, outcome and message text](docs/screenshots/reminders.png) |
 
 "Lindenya" is an invented name. Every person, phone number and address in the app is made up, and the app says so on every page.
 
 ## What it does
 
-- **Patients** browse treatments and dentists, then book in four steps: treatment, dentist (or "anyone available"), time, details. They get a confirmation email with an `.ics` file and a private link to reschedule or cancel. Patients never create an account. There are no prices, by design: the site offers "Call" and "Request a call back" instead.
-- **Receptionists** work from a day and week calendar with one column per dentist: drag to reschedule (or use the keyboard dialog), mark arrivals and no-shows, add walk-ins, block time, work through call-back requests and look up patients.
+- **Patients** browse treatments and dentists, then book in four steps: treatment, dentist (or "anyone available"), time, details. They get a confirmation email with an `.ics` file and a private link to reschedule or cancel, and a reminder 24 hours before the appointment (an email in their language, plus a simulated SMS). Patients never create an account. There are no prices, by design: the site offers "Call" and "Request a call back" instead.
+- **Receptionists** work from a day and week calendar with one column per dentist: drag to reschedule (or use the keyboard dialog), mark arrivals and no-shows, add walk-ins, block time, work through call-back requests and look up patients. A **Reminders log** lists every reminder sent, with the outcome and the message text. In demo mode, "Send my reminders now" sends the reminders for the bookings you made yourself right away, so you can see one without waiting a day.
 - **Dentists** get a phone-friendly "today" list with the next patient highlighted, and manage their own calendar: blocks, weekly repeats, leave.
 - **Admins** edit clinic hours, dentists and treatments.
+- **Dashboard** (receptionists and admins see the whole clinic, a dentist sees only their own numbers): this week, the last 4 weeks or the last 3 months, each compared with the period before. It shows appointments, no-show rate, online share and cancellations, chair utilisation per dentist and a heatmap of the busiest hours.
 
 **Try this:** book an appointment as a patient, then click "Try it as Receptionist". The calendar opens on the day of your booking with your appointment highlighted.
 
-In demo mode every visitor shares the same data, which resets every night at 03:00 Istanbul time. Visitors switch roles with one click from the banner, without a password. A few guards keep one visitor from spoiling the demo for the next: admin settings are view-only, staff actions email nobody, other patients' contact details are masked, and staff can't block or move away the last free times of the next few days (the capacity floor).
+In demo mode every visitor shares the same data, which resets every night at 03:00 Istanbul time. Visitors switch roles with one click from the banner, without a password. A few guards keep one visitor from spoiling the demo for the next: admin settings are view-only, staff actions email nobody, other patients' contact details are masked, and staff can't block or move away the last free times of the next few days (the capacity floor). Reminders for bookings that staff create are only logged in demo mode, never sent, and an email only goes to an address a visitor typed into their own booking, with daily limits per address and per IP.
 
 ## Engineering decisions
 
@@ -37,7 +40,9 @@ In demo mode every visitor shares the same data, which resets every night at 03:
 - **Two languages.** English and Turkish via next-intl, with a unit test that both message files have identical keys.
 - **Roles and permissions.** Better Auth handles staff sessions. Receptionist, dentist and admin rights live in one permission table ([`src/lib/auth/permissions.ts`](src/lib/auth/permissions.ts)) that both pages and server actions check; a dentist can view every calendar but change only their own.
 - **Privacy by omission (KVKK-minded).** The app stores a patient's name, phone, optional email and the appointment, nothing more: no medical records, notes or health data. Visitor IPs are only stored as HMAC hashes, for rate limits. Manage links are random tokens stored hashed.
-- **Demo reset.** A Vercel cron calls `/api/cron/reset` nightly; it needs a bearer secret and refuses to run unless `DEMO_MODE=1`. The seed generates two weeks of realistic bookings around the current date.
+- **Reminders exactly once.** A GitHub Actions schedule calls `/api/cron/reminders` every 15 minutes. Each reminder is claimed with a unique database row before anything is sent, so overlapping runs or retries can't send one twice. Nothing is sent for a booking made within 24 hours of its start. Email and SMS text use the patient's language, and SMS is simulated: the message is stored in the reminders log, not sent.
+- **Dashboard numbers.** Utilisation is booked time as a share of each dentist's working hours after lunch, holidays and blocks. All periods are computed in Istanbul time, and a dentist's role limits the queries themselves to their own appointments.
+- **Demo reset.** A Vercel cron calls `/api/cron/reset` nightly; it needs a bearer secret and refuses to run unless `DEMO_MODE=1`. The seed generates 26 weeks of realistic booking history (so the dashboard has something to compare) plus upcoming bookings around the current date.
 
 ## Architecture
 
@@ -51,11 +56,14 @@ flowchart LR
   D --> E["Resend<br/>booking emails"]
   C["Vercel cron<br/>00:00 UTC = 03:00 Istanbul"] --> R["/api/cron/reset"]
   R --> P
+  G["GitHub Actions<br/>every 15 minutes"] --> M["/api/cron/reminders"]
+  M --> P
+  M --> E
 ```
 
 - **Next.js 16 (App Router)** renders pages on the server. Every write is a server action that validates input with Zod, checks the user's role, and calls a domain module. There is no client-side data layer.
 - **Domain modules** hold the rules. They are plain TypeScript functions that take a database handle, so integration tests call them directly against a real Postgres.
-- **Email** goes through Resend. Without an API key, emails are written to the server log instead, so nothing external is needed to run the app.
+- **Email** goes through Resend, and reminders are sent by a scheduled call to `/api/cron/reminders`. Without an API key, emails are written to the server log instead, so nothing external is needed to run the app.
 
 ## Why double booking is impossible
 
@@ -126,7 +134,7 @@ npm install
 npm run db:up                 # Postgres 17 in Docker on localhost:5433
 cp .env.example .env.local    # the defaults work as-is for local use
 npm run db:migrate
-npm run demo:reset            # seeds the clinic, staff accounts and two weeks of bookings
+npm run demo:reset            # seeds the clinic, staff accounts and 26 weeks of booking history
 npm run dev                   # http://localhost:3000
 ```
 
@@ -165,22 +173,22 @@ npm run user:create -- --email x@clinic.example --name "Dr. X" --role dentist --
 | `DEMO_PASSWORD` | in demo mode | Password of the seeded staff accounts |
 | `RESEND_API_KEY`, `EMAIL_FROM` | no | Send real email through Resend; without them emails are logged |
 | `IP_HASH_SECRET` | in production | HMAC key for visitor IPs (rate limits). Raw IPs are never stored |
-| `CRON_SECRET` | for the nightly reset | Bearer token that `/api/cron/reset` requires |
+| `CRON_SECRET` | for the crons | Bearer token that `/api/cron/reset` and `/api/cron/reminders` require; also the GitHub Actions secret of the reminders workflow |
 
 ## Tests
 
 ```bash
 npm run lint && npm run typecheck
-npm test                          # 99 unit + 159 integration tests (needs the database from npm run db:up)
+npm test                          # 117 unit + 216 integration tests (needs the database from npm run db:up)
 npx playwright install chromium   # once, for the end-to-end tests
-npm run test:e2e                  # 80 Playwright tests; starts its own dev servers on :3200 and :3201
+npm run test:e2e                  # 85 Playwright tests; starts its own dev servers on :3200 and :3201
 ```
 
 The first end-to-end run compiles every page in two dev servers and can take around 15 minutes; on a slow machine a cold compile can time out a test or two. `npx playwright test --last-failed` re-runs just those. CI retries once for the same reason.
 
-- **Unit (94):** slot generation (hours, lunch, blocks, holidays, durations, booking window), the "anyone available" choice, permissions, tokens, time zones, email templates, `.ics`, and EN/TR message-key parity.
-- **Integration (159), against a real Postgres:** the overlap guarantee and the races above, holds, the manage link, staff moves and blocks, the capacity floor, auth, demo masking, email caps and the demo seed.
-- **End-to-end (80):** the full patient booking from a London time zone, the manage link, the "Try it as Receptionist" flow, drag and keyboard rescheduling, dentist blocks and conflict refusals, call-back requests, settings, EN/TR, the capacity floor, and an accessibility sweep.
+- **Unit (117):** slot generation (hours, lunch, blocks, holidays, durations, booking window), the "anyone available" choice, permissions, tokens, time zones, email templates, `.ics`, reminder timing and messages, dashboard calculations, and EN/TR message-key parity.
+- **Integration (216), against a real Postgres:** the overlap guarantee and the races above, holds, the manage link, staff moves and blocks, the capacity floor, auth, demo masking, email caps, the demo seed, and the reminder run (exactly-once claims, the 24-hour rule, demo and staff-booking rules).
+- **End-to-end (85):** the full patient booking from a London time zone, the manage link, the "Try it as Receptionist" flow, drag and keyboard rescheduling, dentist blocks and conflict refusals, call-back requests, settings, EN/TR, the capacity floor, and the reminders log and send-now flow, the dashboard for each role, and an accessibility sweep.
 
 **Accessibility:** axe runs on every public page in both languages and on every staff page, and allows zero serious or critical violations. The calendar is fully usable with the keyboard, and all colour pairs meet WCAG AA.
 
@@ -191,11 +199,13 @@ The first end-to-end run compiles every page in two dev servers and can take aro
 ```
 src/
   app/[locale]/(public)/    patient site and booking flow (EN/TR routes)
-  app/[locale]/staff/       staff login, calendar, today, requests, patients, settings
-  app/api/                  auth, .ics download, nightly demo-reset cron
+  app/[locale]/staff/       staff login, dashboard, calendar, today, requests, reminders, patients, settings
+  app/api/                  auth, .ics download, demo-reset and reminders crons
   components/               booking, calendar, site and staff UI
   lib/booking/              slots, holds, confirmation, manage link, the write helpers
   lib/staff/                calendar data, moves, blocks, requests, settings
+  lib/reminders/            reminder run, simulated SMS, send-now, log queries
+  lib/dashboard/            dashboard metrics and periods
   lib/db/                   Drizzle schema and client
   lib/demo/                 demo mode, seed, reset, capacity floor, masking
   lib/auth/, lib/security/  Better Auth setup, permissions, tokens, rate limits, IP hashing
@@ -208,14 +218,14 @@ docs/                       deploy notes, design spec and implementation plan
 
 ## Known limits
 
-- One clinic, by design. No payments or prices, no SMS, no patient accounts (patients manage a booking through its private link).
+- One clinic, by design. No payments or prices, SMS is simulated (logged, not sent), no patient accounts (patients manage a booking through its private link).
 - Email needs a Resend account and a verified sender domain; locally it is logged.
 - Demo data is public and shared between visitors, and wiped every night.
 - Not deployed yet. The Vercel + Supabase setup is prepared but untested in production.
 
 ## Deploying
 
-The app targets Vercel with Supabase Postgres (any Postgres 17 works). In short: migrate and seed the database, set the environment variables above with fresh secrets, and let `vercel.json` schedule the nightly reset. Step-by-step notes are in [docs/DEPLOY.md](docs/DEPLOY.md).
+The app targets Vercel with Supabase Postgres (any Postgres 17 works). In short: migrate and seed the database, set the environment variables above with fresh secrets, let `vercel.json` schedule the nightly reset, and add two GitHub secrets so the reminders workflow can call the app. Step-by-step notes are in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Clinic name check
 
