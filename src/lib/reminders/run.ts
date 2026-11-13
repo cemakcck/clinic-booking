@@ -10,7 +10,7 @@ import { REMINDER_LEAD_HOURS } from "@/config/booking";
 export type ReminderSource = "schedule" | "send_now";
 export type ReminderRunResult = { considered: number; sms: number; emails: Record<EmailStatus, number>; skipped: number };
 type RunOpts = { onlyEntryIds?: string[]; ipHash?: string; deps?: EmailDeps };
-type Due = { id: string; phone: string; entrySource: "online" | "staff" | null };
+type Due = { id: string; phone: string; entrySource: "online" | "staff" | null; bookingEmail: string | null };
 
 const HOUR_MS = 3_600_000;
 
@@ -30,7 +30,12 @@ async function findDue(db: Db, now: Date, onlyEntryIds?: string[]): Promise<Due[
         lte(entries.scheduledAt, sql`${start} - make_interval(hours => ${REMINDER_LEAD_HOURS})`),
       ];
   return db
-    .select({ id: entries.id, phone: patients.phoneE164, entrySource: entries.source })
+    .select({
+      id: entries.id,
+      phone: patients.phoneE164,
+      entrySource: entries.source,
+      bookingEmail: entries.contactEmail,
+    })
     .from(entries)
     .innerJoin(patients, eq(patients.id, entries.patientId))
     .where(
@@ -110,9 +115,11 @@ async function remindOne(
       subject,
       html,
       text,
-      // An address staff typed (a staff-created booking) keeps the staff trigger, so in demo mode it
-      // is only logged: a visitor signed in as staff must not reach an inbox through a reminder.
-      trigger: d.entrySource === "staff" ? "staff" : source === "send_now" ? "patient" : "system",
+      // An address staff typed (a staff-created booking), or one not typed on this booking at all
+      // (seeded/legacy rows fall back to the patient row), keeps the staff trigger, so in demo mode
+      // it is only logged: a visitor signed in as staff must not reach an inbox through a reminder.
+      trigger:
+        d.entrySource === "staff" || d.bookingEmail === null ? "staff" : source === "send_now" ? "patient" : "system",
       ipHash: source === "send_now" ? opts.ipHash : undefined,
       appointmentId: a.id,
       attachments: [

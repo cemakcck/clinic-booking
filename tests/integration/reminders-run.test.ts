@@ -295,6 +295,21 @@ describe("runReminders (schedule)", () => {
     const [log] = await reminderEmails();
     expect(log).toMatchObject({ status: "logged", trigger: "staff" });
   });
+
+  it("in demo mode an address from the patient row (no booking contact) is logged, not sent", async () => {
+    vi.stubEnv("DEMO_MODE", "1");
+    vi.stubEnv("RESEND_API_KEY", "k");
+    const resend = fakeResend();
+    // A seeded/legacy online row: no per-booking contact, so the address falls back to the patient.
+    const id = await appt({ start: at(23), contact: null, patientEmail: "legacy@mail.test" });
+    const res = await runReminders(db, now, { deps: { resend } });
+    expect(res.emails.logged).toBe(1);
+    expect(resend.send).not.toHaveBeenCalled();
+    const rows = await reminderRows(id);
+    expect(rows.find((r) => r.channel === "email")).toMatchObject({ status: "logged", toAddress: "legacy@mail.test" });
+    const [log] = await reminderEmails();
+    expect(log).toMatchObject({ status: "logged", trigger: "staff" });
+  });
 });
 
 describe("runReminders (send_now)", () => {
