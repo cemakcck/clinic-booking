@@ -213,6 +213,7 @@ export async function createStaffAppointment(
           source: "staff",
           manageTokenHash: manageToken ? hashToken(manageToken) : null,
           createdBy: actor.userId,
+          scheduledAt: q.now,
           updatedAt: q.now,
         },
         q.now,

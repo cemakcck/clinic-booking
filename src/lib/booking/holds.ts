@@ -182,6 +182,7 @@ export async function confirmBooking(
         contactLocale: q.patient.locale,
         manageTokenHash: hashToken(manageToken),
         createdBy: q.demoOwner ?? null,
+        scheduledAt: q.now,
         updatedAt: q.now,
       })
       .where(eq(entries.id, row.id));

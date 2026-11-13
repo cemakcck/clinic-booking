@@ -9,6 +9,7 @@ import {
   serial,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -39,7 +40,8 @@ export const emailStatus = pgEnum("email_status", [
   "capped",
   "failed",
 ]);
-export const emailTrigger = pgEnum("email_trigger", ["patient", "staff"]);
+export const emailTrigger = pgEnum("email_trigger", ["patient", "staff", "system"]);
+export const reminderChannel = pgEnum("reminder_channel", ["email", "sms"]);
 
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 
@@ -149,6 +151,11 @@ export const entries = pgTable("entries", {
   blockNote: text("block_note"),
   seriesId: uuid("series_id"),
   createdBy: text("created_by"),
+  /**
+   * The last time this appointment's start was set (booking confirmed, created by staff, or
+   * moved). Not touched by status changes. Reminders use it to tell a fresh booking from an old one.
+   */
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: createdAt(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -165,18 +172,49 @@ export const callbackRequests = pgTable("callback_requests", {
   createdAt: createdAt(),
 });
 
-export const emailLog = pgTable("email_log", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  kind: text("kind").notNull(),
-  toAddress: text("to_address").notNull(),
-  locale: text("locale").notNull(),
-  subject: text("subject").notNull(),
-  status: emailStatus("status").notNull(),
-  trigger: emailTrigger("trigger").notNull(),
-  ipHash: text("ip_hash"),
-  appointmentId: uuid("appointment_id"),
-  createdAt: createdAt(),
-});
+export const reminders = pgTable(
+  "reminders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => entries.id, { onDelete: "cascade" }),
+    channel: reminderChannel("channel").notNull(),
+    /** The appointment start this reminder is for. */
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    /** "pending" | an email status | "simulated" */
+    status: text("status").notNull(),
+    /** E.164 phone for SMS, normalised email for email; null if none. */
+    toAddress: text("to_address"),
+    locale: text("locale").notNull(),
+    /** The SMS text, or the email subject. */
+    body: text("body").notNull(),
+    /** "schedule" | "send_now" */
+    source: text("source").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("reminders_entry_channel_starts_at_unique").on(t.entryId, t.channel, t.startsAt),
+    index("reminders_created_at_idx").on(t.createdAt),
+  ],
+);
+
+export const emailLog = pgTable(
+  "email_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: text("kind").notNull(),
+    toAddress: text("to_address").notNull(),
+    locale: text("locale").notNull(),
+    subject: text("subject").notNull(),
+    status: emailStatus("status").notNull(),
+    trigger: emailTrigger("trigger").notNull(),
+    ipHash: text("ip_hash"),
+    appointmentId: uuid("appointment_id"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("email_log_to_address_lower_idx").on(sql`lower(${t.toAddress})`)],
+);
 
 export const rateEvents = pgTable("rate_events", {
   id: serial("id").primaryKey(),

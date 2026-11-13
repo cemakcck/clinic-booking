@@ -11,7 +11,7 @@ export async function resetDemo(db: Db, now: Date): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.execute(sql`
       TRUNCATE entries, dentist_treatments, working_hours, patients, callback_requests,
-        email_log, rate_events, dentists, treatments, clinic_hours, clinic_settings, closed_dates,
+        email_log, reminders, rate_events, dentists, treatments, clinic_hours, clinic_settings, closed_dates,
         "session", "account", "verification", "user"
       RESTART IDENTITY CASCADE`);
     await seedClinic(tx, { now });

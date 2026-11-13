@@ -24,7 +24,7 @@ export async function closeTestDb(): Promise<void> {
 export async function resetTables(db: Db): Promise<void> {
   await db.execute(sql`
     TRUNCATE entries, dentist_treatments, working_hours, patients, callback_requests,
-      email_log, rate_events, dentists, treatments, clinic_hours, clinic_settings, closed_dates
+      email_log, reminders, rate_events, dentists, treatments, clinic_hours, clinic_settings, closed_dates
     RESTART IDENTITY CASCADE`);
 }
 

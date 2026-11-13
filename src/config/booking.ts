@@ -8,10 +8,12 @@ export const MANAGE_CUTOFF_HOURS = 24;
 export const DEMO_FLOOR = { minSlots: 4, days: 3, probeDurationMin: 30 };
 export const EMAIL_CAP_PER_ADDRESS_PER_DAY = 5;
 export const EMAIL_CAP_PER_IP_PER_DAY = 10;
+export const REMINDER_LEAD_HOURS = 24;
 export const RATE = {
   hold: [20, 3_600_000],
   confirm: [10, 3_600_000],
   callback: [5, 3_600_000],
   /** Staff sign-in attempts per IP hash: 10 per 15 minutes. */
+  reminders: [5, 3_600_000],
   signin: [10, 900_000],
 } as const;

@@ -111,6 +111,6 @@ export async function updateEntryRange(
   }
   await sweepExpiredHolds(tx, dentistId, range, now, id);
   await withSlotTaken(async () => {
-    await tx.update(entries).set({ dentistId, during: range, updatedAt: now }).where(eq(entries.id, id));
+    await tx.update(entries).set({ dentistId, during: range, scheduledAt: now, updatedAt: now }).where(eq(entries.id, id));
   });
 }
