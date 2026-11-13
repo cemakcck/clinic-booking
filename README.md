@@ -1,23 +1,45 @@
-# Lindenya Dental Clinic: online booking demo
+# Lindenya Dental: clinic booking system
 
-A working booking system for a **fictional** dental clinic in Kadıköy, Istanbul, in English and Turkish. Patients book online in four steps, and the clinic's staff run their day from a shared calendar. It is a portfolio project by [Cem Akçiçek](https://github.com/cemakcck). "Lindenya" is an invented name, every person, phone number and address in it is made up, and the app says so on every page.
+Online booking and a staff calendar for a fictional dental clinic in Istanbul, built so that **two patients can never be booked into the same chair at the same time**. PostgreSQL enforces that rule, not just the application code.
 
-The point of the project is the part you can't see: **two patients can never end up booked into the same chair at the same time**, whichever path the booking takes (two patients clicking at once, a receptionist dragging an appointment, a dentist blocking time, a walk-in). PostgreSQL itself enforces it. See [Why double booking is impossible](#why-double-booking-is-impossible).
+[![CI](https://github.com/cemakcck/clinic-booking/actions/workflows/ci.yml/badge.svg)](https://github.com/cemakcck/clinic-booking/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![The receptionist's day view: one column per dentist, booked appointments, lunch and blocked time](docs/screenshot.png)
+**Live demo:** https://clinic.cemakcicek.com (launching soon) · **Portfolio:** [cemakcicek.com](https://cemakcicek.com) · **GitHub:** [@cemakcck](https://github.com/cemakcck)
 
-## What you can do
+Next.js 16 · TypeScript · Tailwind CSS 4 · PostgreSQL 17 · Drizzle ORM · Better Auth · next-intl (English/Turkish) · Vitest · Playwright
 
-- **As a patient:** browse treatments and dentists, pick a treatment, a dentist (or "anyone available") and a time, and confirm. You get an email with an `.ics` calendar file and a private link to reschedule or cancel. There are no prices anywhere, by design: real clinics quote in person, so the site offers "Call" and "Request a call back" instead.
-- **As a receptionist:** a day and week calendar with one column per dentist. Drag to reschedule (or use the keyboard dialog), mark arrivals and no-shows, add walk-ins, block time, work through call-back requests and look up patients.
-- **As a dentist:** a phone-friendly "today" list with the next patient highlighted, and full control of your own calendar (blocks, weekly repeats, leave).
-- **As an admin:** clinic hours, dentists and treatments.
+| Patient site | Booking: pick a time |
+| --- | --- |
+| ![Home page of the fictional Lindenya clinic, with the demo banner and the next free slot](docs/screenshots/home.png) | ![Step 3 of the booking flow: a day picker and free times in Istanbul time, with a summary card](docs/screenshots/booking.png) |
+| **Receptionist calendar** | **Dentist's day (phone)** |
+| ![Receptionist day view: one column per dentist, the patient's new booking highlighted](docs/screenshots/receptionist-calendar.png) | ![Dentist's today list on a phone, the next patient highlighted](docs/screenshots/dentist-today.png) |
 
-**Try the magic moment:** book an appointment as a patient, then click "Try it as Receptionist" in the banner. The calendar opens on the day of your booking, with your appointment highlighted.
+"Lindenya" is an invented name. Every person, phone number and address in the app is made up, and the app says so on every page.
 
-In demo mode every visitor shares the same data, and it resets every night at 03:00 Istanbul time. A few guards stop one visitor from spoiling the demo for the next: admin settings are view-only, staff actions email nobody, and staff can't block or move away the last free times of the next few days (the capacity floor).
+## What it does
 
-## How it works
+- **Patients** browse treatments and dentists, then book in four steps: treatment, dentist (or "anyone available"), time, details. They get a confirmation email with an `.ics` file and a private link to reschedule or cancel. Patients never create an account. There are no prices, by design: the site offers "Call" and "Request a call back" instead.
+- **Receptionists** work from a day and week calendar with one column per dentist: drag to reschedule (or use the keyboard dialog), mark arrivals and no-shows, add walk-ins, block time, work through call-back requests and look up patients.
+- **Dentists** get a phone-friendly "today" list with the next patient highlighted, and manage their own calendar: blocks, weekly repeats, leave.
+- **Admins** edit clinic hours, dentists and treatments.
+
+**Try this:** book an appointment as a patient, then click "Try it as Receptionist". The calendar opens on the day of your booking with your appointment highlighted.
+
+In demo mode every visitor shares the same data, which resets every night at 03:00 Istanbul time. Visitors switch roles with one click from the banner, without a password. A few guards keep one visitor from spoiling the demo for the next: admin settings are view-only, staff actions email nobody, other patients' contact details are masked, and staff can't block or move away the last free times of the next few days (the capacity floor).
+
+## Engineering decisions
+
+- **Double booking is prevented by the database.** Appointments, holds and blocks share one `entries` table, and a Postgres `EXCLUDE USING gist` constraint forbids two active entries of the same dentist from overlapping. This is why the project uses Postgres. Details [below](#why-double-booking-is-impossible).
+- **Holds.** Picking a time reserves it for 5 minutes as a row in the same table, so two patients can't both reach the details form for one slot. Expired holds are cleaned up inside the next write's transaction, and confirming is idempotent.
+- **One write path.** Patient bookings, reschedules, staff drags, walk-ins and blocks all go through the same two helpers, so every path gets the same constraint and the same "that time was just taken" error.
+- **Time zones.** All clinic times are Europe/Istanbul, formatted with `Intl` in that zone, never the server's or the browser's. Unit and integration tests run with `TZ=America/New_York`, and an end-to-end test books from a London browser, so time-zone bugs fail loudly.
+- **Two languages.** English and Turkish via next-intl, with a unit test that both message files have identical keys.
+- **Roles and permissions.** Better Auth handles staff sessions. Receptionist, dentist and admin rights live in one permission table ([`src/lib/auth/permissions.ts`](src/lib/auth/permissions.ts)) that both pages and server actions check; a dentist can view every calendar but change only their own.
+- **Privacy by omission (KVKK-minded).** The app stores a patient's name, phone, optional email and the appointment, nothing more: no medical records, notes or health data. Visitor IPs are only stored as HMAC hashes, for rate limits. Manage links are random tokens stored hashed.
+- **Demo reset.** A Vercel cron calls `/api/cron/reset` nightly; it needs a bearer secret and refuses to run unless `DEMO_MODE=1`. The seed generates two weeks of realistic bookings around the current date.
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -31,11 +53,9 @@ flowchart LR
   R --> P
 ```
 
-- **Next.js 16 (App Router)** renders pages on the server. Every write goes through a server action that validates its input with Zod, checks the user's role, and calls a domain module. There is no client-side data layer.
-- **Domain modules** hold the rules. They are plain TypeScript functions that take a database handle, so the integration tests call them directly against a real Postgres: `src/lib/booking` (slots, holds, confirmation, the manage link) and `src/lib/staff` (calendar data, moves, blocks, requests, settings).
-- **PostgreSQL 17 with Drizzle ORM.** One `entries` table holds appointments, holds and blocks, so a single constraint covers every kind of overlap.
-- **Better Auth** handles staff logins (email and password; patients never log in). **Resend** sends email. Without an API key, emails are written to the log instead of sent.
-- **next-intl** serves English and Turkish. All clinic times are Europe/Istanbul and are formatted with `Intl` in that zone, never the server's or the browser's. The unit and integration tests run with `TZ=America/New_York`, so time-zone bugs fail loudly.
+- **Next.js 16 (App Router)** renders pages on the server. Every write is a server action that validates input with Zod, checks the user's role, and calls a domain module. There is no client-side data layer.
+- **Domain modules** hold the rules. They are plain TypeScript functions that take a database handle, so integration tests call them directly against a real Postgres.
+- **Email** goes through Resend. Without an API key, emails are written to the server log instead, so nothing external is needed to run the app.
 
 ## Why double booking is impossible
 
@@ -98,18 +118,35 @@ The fix: every write first takes a per-dentist advisory lock (`lockDentists`), i
 
 ## Running locally
 
-You need Node 22 and Docker.
+You need **Node.js 22+** and **Docker** (with Compose). No cloud account or API key is needed.
 
 ```bash
+git clone https://github.com/cemakcck/clinic-booking.git && cd clinic-booking
 npm install
-npm run db:up                 # Postgres 17 on localhost:5433 (docker compose)
-cp .env.example .env.local    # then set BETTER_AUTH_SECRET, e.g. openssl rand -base64 32
+npm run db:up                 # Postgres 17 in Docker on localhost:5433
+cp .env.example .env.local    # the defaults work as-is for local use
 npm run db:migrate
-npm run demo:reset            # seeds the demo clinic, staff accounts and two weeks of bookings
+npm run demo:reset            # seeds the clinic, staff accounts and two weeks of bookings
 npm run dev                   # http://localhost:3000
 ```
 
-`npm run demo:reset` wipes the database in `DATABASE_URL`, so it refuses to run unless `DEMO_MODE=1` (or you pass `--force`). To add a real staff login outside the demo:
+Open http://localhost:3000, book an appointment, then use the "Try it as" buttons in the banner to switch to Receptionist or Dentist.
+
+- **Port 5433 already taken?** Start the database with `CLINIC_DB_PORT=5434 npm run db:up` and change `5433` to `5434` in `.env.local` (and export `TEST_DATABASE_URL` with the new port before running tests).
+- **Email** is logged to the terminal running `npm run dev` unless you set `RESEND_API_KEY` and `EMAIL_FROM`.
+- `npm run demo:reset` wipes the database in `DATABASE_URL`, so it refuses to run unless `DEMO_MODE=1` (or you pass `--force`).
+
+### Demo accounts
+
+In demo mode the banner and the staff login page sign you in with one click. To use the login form instead, all accounts share the `DEMO_PASSWORD` from `.env.local` (`change-me-demo-password` by default):
+
+| Role | Email | Can |
+| --- | --- | --- |
+| Receptionist | `zeynep@staff.example` | Run the calendar for all dentists, requests, patients |
+| Dentist | `elif@staff.example` (Dr. Elif Aydın) | See the today view and all calendars; change only her own |
+| Admin | `admin@staff.example` | Everything, plus settings (view-only in demo mode) |
+
+Outside demo mode, add a staff login with:
 
 ```bash
 npm run user:create -- --email x@clinic.example --name "Dr. X" --role dentist --dentist elif-aydin --password '…'
@@ -120,56 +157,70 @@ npm run user:create -- --email x@clinic.example --name "Dr. X" --role dentist --
 | Variable | Required | What it does |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
-| `TEST_DATABASE_URL` | for tests | Base URL of the test databases; `clinic_test`, `clinic_e2e` and `clinic_e2e_live` are created on the same server |
-| `BETTER_AUTH_SECRET` | yes | Signs staff sessions. Use a long random value; Better Auth refuses the default in production |
+| `TEST_DATABASE_URL` | for tests | Base URL of the test databases; `clinic_test`, `clinic_e2e` and `clinic_e2e_live` are created on the same server. Read from the shell environment, not `.env.local` (default: the docker-compose database) |
+| `BETTER_AUTH_SECRET` | yes | Signs staff sessions and the demo cookie. The `.env.example` value is for local use only |
 | `BETTER_AUTH_URL` | yes | The app's public URL, for auth |
 | `SITE_URL` | in production | Base URL of the manage-booking links in emails; falls back to `http://localhost:3000` |
 | `DEMO_MODE` | no | `1` turns on the demo: banner, one-click logins, capacity floor, view-only settings, nightly reset |
-| `DEMO_PASSWORD` | in demo mode | Password of the seeded staff accounts; there is no default |
-| `RESEND_API_KEY` | no | Without it, emails are logged instead of sent |
-| `EMAIL_FROM` | with Resend | Sender address on a domain verified in Resend |
+| `DEMO_PASSWORD` | in demo mode | Password of the seeded staff accounts |
+| `RESEND_API_KEY`, `EMAIL_FROM` | no | Send real email through Resend; without them emails are logged |
 | `IP_HASH_SECRET` | in production | HMAC key for visitor IPs (rate limits). Raw IPs are never stored |
 | `CRON_SECRET` | for the nightly reset | Bearer token that `/api/cron/reset` requires |
-
-### Demo accounts
-
-In demo mode the login page has one-click buttons. To sign in with the form, all three accounts use `DEMO_PASSWORD`:
-
-| Role | Email | Can |
-| --- | --- | --- |
-| Receptionist | `zeynep@staff.example` | Run the calendar for all dentists, requests, patients |
-| Dentist | `elif@staff.example` (Dr. Elif Aydın) | See the today view and all calendars; change only her own |
-| Admin | `admin@staff.example` | Everything, plus settings (view-only in demo mode) |
 
 ## Tests
 
 ```bash
 npm run lint && npm run typecheck
-npm test            # unit (jsdom) + integration (real Postgres on :5433)
-npm run test:e2e    # Playwright: starts two dev servers, demo mode on :3200 and live mode on :3201
+npm test                          # 94 unit + 159 integration tests (needs the database from npm run db:up)
+npx playwright install chromium   # once, for the end-to-end tests
+npm run test:e2e                  # 80 Playwright tests; starts its own dev servers on :3200 and :3201
 ```
 
-- **Unit:** slot generation (hours, lunch, blocks, holidays, durations, booking window), the "anyone available" choice, permissions, tokens, time zones, email templates, `.ics`, and a check that the English and Turkish message files have identical keys.
-- **Integration:** the overlap guarantee and the races above, holds, the manage link, staff moves and blocks, the capacity floor, auth, email caps and the demo seed.
-- **End-to-end:** the full patient booking (from a London time zone, to show the times stay in Istanbul time), the manage link, the "Try it as Receptionist" moment, drag and keyboard rescheduling, dentist blocks and conflict refusals, call-back requests, settings, EN/TR, the capacity floor holding while a receptionist tries to block out the next three days, and an accessibility sweep.
+The first end-to-end run compiles every page in two dev servers and can take around 15 minutes; on a slow machine a cold compile can time out a test or two. `npx playwright test --last-failed` re-runs just those. CI retries once for the same reason.
 
-**Accessibility:** axe runs on every public page in both languages and on every staff page, and allows zero serious or critical violations. The calendar is fully usable with the keyboard. All colour pairs meet WCAG AA. The one adjustment was the decorative "404" numeral on the not-found page, which moved from the mint accent (1.6:1 on its background) to the secondary teal (3.8:1, AA for large text).
+- **Unit (94):** slot generation (hours, lunch, blocks, holidays, durations, booking window), the "anyone available" choice, permissions, tokens, time zones, email templates, `.ics`, and EN/TR message-key parity.
+- **Integration (159), against a real Postgres:** the overlap guarantee and the races above, holds, the manage link, staff moves and blocks, the capacity floor, auth, demo masking, email caps and the demo seed.
+- **End-to-end (80):** the full patient booking from a London time zone, the manage link, the "Try it as Receptionist" flow, drag and keyboard rescheduling, dentist blocks and conflict refusals, call-back requests, settings, EN/TR, the capacity floor, and an accessibility sweep.
 
-**Lighthouse** (desktop preset, home page, production build): Performance 100, Accessibility 100, Best Practices 100, SEO 100.
+**Accessibility:** axe runs on every public page in both languages and on every staff page, and allows zero serious or critical violations. The calendar is fully usable with the keyboard, and all colour pairs meet WCAG AA.
 
-**CI:** GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, typecheck, and the unit, integration and end-to-end tests on every push and pull request, with Postgres 17 as a service container.
+**CI:** GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint, typecheck, unit, integration and end-to-end tests and a production build on every push and pull request, with Postgres 17 as a service container.
+
+## Project structure
+
+```
+src/
+  app/[locale]/(public)/    patient site and booking flow (EN/TR routes)
+  app/[locale]/staff/       staff login, calendar, today, requests, patients, settings
+  app/api/                  auth, .ics download, nightly demo-reset cron
+  components/               booking, calendar, site and staff UI
+  lib/booking/              slots, holds, confirmation, manage link, the write helpers
+  lib/staff/                calendar data, moves, blocks, requests, settings
+  lib/db/                   Drizzle schema and client
+  lib/demo/                 demo mode, seed, reset, capacity floor, masking
+  lib/auth/, lib/security/  Better Auth setup, permissions, tokens, rate limits, IP hashing
+drizzle/                    SQL migrations, including the exclusion constraint
+messages/                   en.json and tr.json
+scripts/                    migrate, seed, demo reset, create staff user
+tests/unit, tests/integration, tests/e2e
+docs/                       deploy notes, design spec and implementation plan
+```
+
+## Known limits
+
+- One clinic, by design. No payments or prices, no SMS, no patient accounts (patients manage a booking through its private link).
+- Email needs a Resend account and a verified sender domain; locally it is logged.
+- Demo data is public and shared between visitors, and wiped every night.
+- Not deployed yet. The Vercel + Supabase setup is prepared but untested in production.
+
+## Deploying
+
+The app targets Vercel with Supabase Postgres (any Postgres 17 works). In short: migrate and seed the database, set the environment variables above with fresh secrets, and let `vercel.json` schedule the nightly reset. Step-by-step notes are in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Clinic name check
 
-The name was checked so it doesn't belong to a real clinic. On 2026-11-08, web searches for "Lindenya diş kliniği İstanbul" and "Lindenya dental Istanbul" returned no result mentioning Lindenya, only unrelated clinics. Contact details are placeholders too: the phone number (`+90 216 000 00 00`) is a non-assigned, all-zero number, the street address ("Lindenya Sokağı No: 1") is invented and labelled fictional, and the email uses the reserved `.example` domain.
+On 2026-11-08, web searches for "Lindenya diş kliniği İstanbul" and "Lindenya dental Istanbul" returned no clinic with that name. The phone number (`+90 216 000 00 00`) is an all-zero placeholder, the street address is invented and labelled fictional, and emails use the reserved `.example` domain.
 
-## Before deploying
+## License
 
-The app is meant to run on Vercel with Neon Postgres. Before putting it online:
-
-- **Database:** create a Neon Postgres database, set `DATABASE_URL`, run `npm run db:migrate`, and for the demo run `DEMO_MODE=1 npm run demo:reset`.
-- **`BETTER_AUTH_SECRET`:** set a fresh long random value; Better Auth refuses to start in production with the default. Set `BETTER_AUTH_URL` and `SITE_URL` to the real URL, or the manage links in emails will point at localhost.
-- **`CRON_SECRET`:** `vercel.json` schedules `/api/cron/reset` at 00:00 UTC (03:00 Istanbul). Vercel sends the secret as a bearer token, and the route rejects requests without it. It only resets when `DEMO_MODE=1`.
-- **`IP_HASH_SECRET`:** without it, IP hashes use a public default key.
-- **Resend:** set `RESEND_API_KEY` and an `EMAIL_FROM` address on a domain verified in Resend. The default sender, `hello@lindenya.example`, would be rejected.
-- **Run behind a proxy that sets `X-Forwarded-For`** (Vercel does). Rate limits key on the client IP; without the header, every visitor shares one bucket.
+[MIT](LICENSE) © Cem Akçiçek
