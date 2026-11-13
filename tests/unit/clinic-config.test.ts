@@ -10,4 +10,10 @@ describe("clinic contact details are obviously fictional", () => {
     expect(clinic.address).toBe("Lindenya Sokağı No: 1, Kadıköy, İstanbul (fictional)");
     expect(clinic.email.endsWith(".example")).toBe(true);
   });
+  it("contact map text names the same street and district as the clinic address", () => {
+    const [street, district] = clinic.mapText.split(",").map((s) => s.trim());
+    const [addrStreet, addrDistrict] = clinic.address.split(",").map((s) => s.trim());
+    expect(addrStreet.startsWith(street)).toBe(true);
+    expect(addrDistrict).toBe(district);
+  });
 });

@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
-import { entries, patients, rateEvents } from "@/lib/db/schema";
+import { dentists, entries, patients, rateEvents } from "@/lib/db/schema";
 import { closeTestDb, resetTables, seedFixture, T, testDb, NOW_ISO } from "./helpers/db";
 import type { Fixture } from "./helpers/fixture";
 import { getDaySlots } from "@/lib/booking/availability";
@@ -138,6 +138,14 @@ describe("confirm", () => {
     const [a, b] = await Promise.all([confirm(h), confirm(h)]);
     expect(a.appointmentId).toBe(b.appointmentId);
     expect([a.created, b.created].sort()).toEqual([false, true]);
+  });
+
+  it("confirm refuses a hold whose dentist was deactivated after the hold was placed", async () => {
+    const h = await hold();
+    await db.update(dentists).set({ active: false }).where(eq(dentists.id, fx.dentists.ayd));
+    expect(await code(confirm(h))).toBe("hold_expired");
+    const [row] = await db.select().from(entries).where(eq(entries.id, h.holdId));
+    expect(row.kind).toBe("hold");
   });
 
   it("re-acquires an expired but still-free hold", async () => {

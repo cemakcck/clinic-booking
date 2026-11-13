@@ -7,5 +7,5 @@ export const clinic = {
   phoneDisplay: "+90 216 000 00 00",
   phoneE164: "+902160000000",
   email: "hello@lindenya.example",
-  mapText: "Moda Caddesi, Kadıköy",
+  mapText: "Lindenya Sokağı, Kadıköy",
 };

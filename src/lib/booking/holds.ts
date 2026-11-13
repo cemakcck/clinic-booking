@@ -149,6 +149,11 @@ export async function confirmBooking(
     if (row.kind === "appointment") return result(manageToken, false);
     if (row.kind !== "hold") throw new BookingError("not_found");
 
+    // The dentist may have been deactivated since the hold was placed (the dentist lock is held,
+    // so a concurrent deactivation either committed already or waits for us).
+    const [dentist] = await tx.select({ active: dentists.active }).from(dentists).where(eq(dentists.id, row.dentistId));
+    if (!dentist?.active) throw new BookingError("hold_expired");
+
     if (row.expiresAt && row.expiresAt <= q.now) {
       try {
         await assertBookable(tx, {

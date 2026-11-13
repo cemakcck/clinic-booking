@@ -241,7 +241,7 @@ export type BlockingAppointment = { id: string; start: string; patientName: stri
 
 /**
  * Replaces the dentist's treatments and weekly hours. Existing appointments are never touched.
- * Deactivating a dentist who still has booked appointments ending after `now` is refused with
+ * Deactivating an active dentist who still has booked appointments ending after `now` is refused with
  * `dentist_has_appointments` and the list, so none are stranded off the calendar.
  */
 export async function saveDentist(db: DbOrTx, actor: Actor, input: DentistInput, now: Date = new Date()): Promise<number> {
@@ -255,6 +255,11 @@ export async function saveDentist(db: DbOrTx, actor: Actor, input: DentistInput,
         // The dentist lock serialises this check with bookings for them: one that commits first
         // shows up here, one that waits sees the dentist inactive afterwards.
         await lockDentists(tx, [id]);
+      }
+      // Only the active -> inactive switch strands appointments; editing or reactivating a dentist
+      // who is already inactive must stay possible however many future appointments they have.
+      const [current] = id === undefined ? [] : await tx.select({ active: dentists.active }).from(dentists).where(eq(dentists.id, id));
+      if (id !== undefined && !values.active && current?.active) {
         const rows = await tx
           .select({
             id: entries.id,

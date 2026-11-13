@@ -8,6 +8,7 @@ import { BookingError } from "@/lib/booking/errors";
 import { findOutsideHours } from "@/lib/staff/outside-hours";
 import {
   addClosedDate,
+  getDentist,
   removeClosedDate,
   saveClinicHours,
   saveDentist,
@@ -186,6 +187,61 @@ describe("settings", () => {
     await saveDentist(db, admin, input, now);
     const [after] = await db.select().from(dentists).where(eq(dentists.id, fx.dentists.ayd));
     expect(after.active).toBe(false);
+  });
+
+  const futureAppointment = async () => {
+    const [p] = await db
+      .insert(patients)
+      .values({ name: "Patient Row", phoneE164: "+905320000003", email: "p3@example.com", locale: "en" })
+      .returning({ id: patients.id });
+    await db.insert(entries).values({
+      dentistId: fx.dentists.ayd,
+      kind: "appointment",
+      during: { start: T("2026-11-12", "10:00"), end: T("2026-11-12", "10:30") },
+      treatmentId: fx.treatments.checkup,
+      patientId: p.id,
+      status: "booked",
+      source: "online",
+    });
+  };
+
+  it("admin can open and save an inactive dentist who still has future appointments", async () => {
+    const now = T("2026-11-10", "08:00");
+    await futureAppointment();
+    await db.update(dentists).set({ active: false }).where(eq(dentists.id, fx.dentists.ayd));
+    const d = await getDentist(db, admin, fx.dentists.ayd);
+    expect(d?.active).toBe(false);
+    const input = {
+      id: fx.dentists.ayd, slug: "ayd", name: "Dr. Ayd R.", titleEn: "Dentist", titleTr: "Diş Hekimi",
+      bioEn: "", bioTr: "", sortOrder: 1, active: false,
+      treatmentIds: [fx.treatments.checkup],
+      hours: [1, 2, 3, 4, 5].map((weekday) => ({ weekday, start: "09:00", end: "18:00" })),
+    };
+    await saveDentist(db, admin, input, now);
+    const [row] = await db.select().from(dentists).where(eq(dentists.id, fx.dentists.ayd));
+    expect(row.name).toBe("Dr. Ayd R.");
+    expect(row.active).toBe(false);
+  });
+
+  it("can reactivate them", async () => {
+    const now = T("2026-11-10", "08:00");
+    await futureAppointment();
+    await db.update(dentists).set({ active: false }).where(eq(dentists.id, fx.dentists.ayd));
+    const d = await getDentist(db, admin, fx.dentists.ayd);
+    expect(d).not.toBeNull();
+    await saveDentist(
+      db,
+      admin,
+      {
+        id: fx.dentists.ayd, slug: "ayd", name: "Dr. Ayd", titleEn: "Dentist", titleTr: "Diş Hekimi",
+        bioEn: "", bioTr: "", sortOrder: 1, active: true,
+        treatmentIds: [fx.treatments.checkup],
+        hours: [1, 2, 3, 4, 5].map((weekday) => ({ weekday, start: "09:00", end: "18:00" })),
+      },
+      now,
+    );
+    const [row] = await db.select().from(dentists).where(eq(dentists.id, fx.dentists.ayd));
+    expect(row.active).toBe(true);
   });
 
   it("duration must be a multiple of 15", async () => {

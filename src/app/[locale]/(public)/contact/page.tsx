@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("metaTitle") };
 }
 
-/** A stylised, not-to-scale sketch of Moda: sea, pier, Moda Caddesi and the clinic pin. */
+/** A stylised, not-to-scale sketch of Moda: sea, pier, the clinic street and the clinic pin. */
 function MapArt({ label, pier, sea, street }: { label: string; pier: string; sea: string; street: string }) {
   return (
     <svg viewBox="0 0 560 380" role="img" aria-label={label} className="h-full w-full" preserveAspectRatio="xMidYMid slice">
