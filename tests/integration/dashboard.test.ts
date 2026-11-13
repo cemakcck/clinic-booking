@@ -118,6 +118,29 @@ describe("dashboardData", () => {
     ]);
   });
 
+  it("utilisation counts only booked time inside working hours, so it never exceeds 100%", async () => {
+    // Sat 21: 10–14 minus lunch = 180 working minutes for Dr. Ayd.
+    await appt(fx.dentists.ayd, "2026-11-21", "10:00", "13:00", "completed"); // 150: the half hour in lunch (12:30–13:30) doesn't count
+    await appt(fx.dentists.ayd, "2026-11-21", "15:00", "17:00", "completed"); // walk-in after closing: 0
+    await appt(fx.dentists.ayd, "2026-11-22", "10:00", "11:00", "completed"); // Sunday, closed: 0
+    const r = await dashboardData(db, admin, "week", now);
+    const ayd = r.utilisation.find((u) => u.dentistId === fx.dentists.ayd)!;
+    expect(ayd.bookedMin).toBe(150);
+    expect(ayd.ratio!).toBeLessThanOrEqual(1);
+  });
+
+  it("utilisation ratio stays at most 1 when walk-ins outside hours outweigh the working time", async () => {
+    // Close every weekday but Saturday for this check: only 180 working minutes in the week.
+    for (const d of ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20"])
+      await db.insert(closedDates).values({ date: d, labelEn: "Closed", labelTr: "Kapalı" });
+    await appt(fx.dentists.ayd, "2026-11-21", "10:00", "12:00", "completed"); // 120 in hours
+    await appt(fx.dentists.ayd, "2026-11-21", "14:00", "20:00", "completed"); // 360 after closing
+    const r = await dashboardData(db, admin, "week", now);
+    const ayd = r.utilisation.find((u) => u.dentistId === fx.dentists.ayd)!;
+    expect(ayd).toMatchObject({ bookedMin: 120, workingMin: 180 });
+    expect(ayd.ratio).toBeCloseTo(120 / 180, 10);
+  });
+
   it("heatmap buckets by Istanbul weekday and hour", async () => {
     await appt(fx.dentists.ayd, "2026-11-16", "10:00", "10:30", "completed");
     await appt(fx.dentists.kay, "2026-11-16", "10:45", "11:15", "completed");

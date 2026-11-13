@@ -92,6 +92,11 @@ function subtract(from: Interval[], cut: Interval[]): Interval[] {
   return out;
 }
 
+/** `i` cut to `w`; callers check the overlap is non-empty first. */
+function clip(i: Interval, w: Window): Interval {
+  return { start: new Date(Math.max(i.start.getTime(), w.start.getTime())), end: new Date(Math.min(i.end.getTime(), w.end.getTime())) };
+}
+
 function clippedMs(i: Interval, w: Window): number {
   const s = Math.max(i.start.getTime(), w.start.getTime());
   const e = Math.min(i.end.getTime(), w.end.getTime());
@@ -158,7 +163,9 @@ async function utilisation(db: DbOrTx, w: Window, dentistId: number | null): Pro
     const blocks = mine.filter((e) => e.kind === "block").map((e) => e.during);
     const own = new Map(hoursRows.filter((h) => h.dentistId === id).map((h) => [h.weekday, h]));
 
-    let workingMs = 0;
+    // Working time: open hours minus breaks, closed dates and blocks. Booked time counts only inside
+    // it, so a walk-in after closing can't push the ratio past 100%.
+    const working: Interval[] = [];
     for (const date of dates) {
       if (closed.has(date)) continue;
       const wd = weekdayOf(date);
@@ -167,11 +174,13 @@ async function utilisation(db: DbOrTx, w: Window, dentistId: number | null): Pro
       if (!hours) continue;
       const at = (r: HoursRange): Interval => ({ start: atIstanbul(date, r.start), end: atIstanbul(date, r.end) });
       const free = subtract([at(hours.open)], [...hours.breaks.map(at), ...blocks]);
-      for (const i of free) workingMs += clippedMs(i, w);
+      for (const i of free) if (clippedMs(i, w) > 0) working.push(clip(i, w));
     }
+    const workingMs = working.reduce((n, i) => n + (i.end.getTime() - i.start.getTime()), 0);
+    // Appointments never overlap each other (one chair per dentist), so the clipped sums add up.
     const bookedMs = mine
       .filter((e) => e.kind === "appointment")
-      .reduce((n, e) => n + clippedMs(e.during, w), 0);
+      .reduce((n, e) => n + working.reduce((m, i) => m + clippedMs(e.during, i), 0), 0);
 
     const workingMin = Math.round(workingMs / MIN_MS);
     const bookedMin = Math.round(bookedMs / MIN_MS);
