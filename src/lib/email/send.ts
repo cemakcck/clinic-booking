@@ -17,7 +17,8 @@ export type EmailMessage = {
   subject: string;
   html: string;
   text: string;
-  trigger: "patient" | "staff";
+  /** "system": the scheduled reminder pass, sending to the address the visitor typed. */
+  trigger: "patient" | "staff" | "system";
   ipHash?: string;
   appointmentId?: string;
   attachments?: { filename: string; content: string }[];
@@ -39,6 +40,8 @@ function isSuppressed(to: string | null): boolean {
 
 async function decide(db: DbOrTx, m: EmailMessage, deps: EmailDeps): Promise<EmailStatus> {
   if (isSuppressed(m.to)) return "suppressed";
+  // In demo, staff actions only log: staff could otherwise email any address. Patient and system
+  // email goes only to the address typed into the booking itself, under the caps below.
   if (isDemo() && m.trigger === "staff") return "logged";
 
   const since = new Date(m.now.getTime() - DAY_MS);
