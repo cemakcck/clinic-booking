@@ -24,6 +24,7 @@ const TABLE: Record<Action, [boolean, boolean, boolean, boolean, boolean]> = {
   "block.manage": [true, true, false, true, false],
   "requests.view": [true, true, false, false, false],
   "reminders.view": [true, true, false, false, false],
+  "dashboard.view": [true, true, true, true, true],
   "patients.view": [true, true, true, true, true],
   "settings.view": [false, true, false, false, false],
   "settings.edit": [false, true, false, false, false],
