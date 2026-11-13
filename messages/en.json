@@ -31,7 +31,17 @@
     "cancelled": {
       "subject": "Your appointment has been cancelled",
       "intro": "Your appointment has been cancelled. You are welcome to book a new time whenever suits you."
+    },
+    "reminder": {
+      "subjectTomorrow": "Reminder: your appointment tomorrow at {time}",
+      "subjectDate": "Reminder: your appointment on {date} at {time}",
+      "intro": "This is a friendly reminder of your upcoming appointment.",
+      "manage": "To change or cancel, use the link in your confirmation email, or call us at {phone}."
     }
+  },
+  "sms": {
+    "reminderTomorrow": "{clinic}: reminder, your appointment with {dentist} is tomorrow at {time}. To change it call {phone}.",
+    "reminderDate": "{clinic}: reminder, your appointment with {dentist} is on {date} at {time}. To change it call {phone}."
   },
   "public": {
     "nav": {

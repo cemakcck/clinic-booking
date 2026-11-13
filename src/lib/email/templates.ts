@@ -2,10 +2,10 @@ import { createTranslator } from "next-intl";
 import en from "../../../messages/en.json";
 import tr from "../../../messages/tr.json";
 import { clinic } from "@/config/clinic";
-import { formatLongDate, formatSlotTime } from "@/lib/time";
+import { formatLongDate, formatSlotTime, isTomorrow } from "@/lib/time";
 import type { Locale } from "@/i18n/routing";
 
-export type EmailKind = "booking_confirmation" | "booking_rescheduled" | "booking_cancelled";
+export type EmailKind = "booking_confirmation" | "booking_rescheduled" | "booking_cancelled" | "appointment_reminder";
 
 type Data = {
   patientName: string;
@@ -13,6 +13,8 @@ type Data = {
   dentistName: string;
   start: Date;
   manageUrl?: string;
+  /** Reference clock for "tomorrow" in reminders; defaults to the current time. */
+  now?: Date;
 };
 
 const messages = { en, tr };
@@ -24,6 +26,7 @@ const KEY = {
   booking_confirmation: "confirmation",
   booking_rescheduled: "rescheduled",
   booking_cancelled: "cancelled",
+  appointment_reminder: "reminder",
 } as const;
 
 export function renderEmail(
@@ -34,7 +37,16 @@ export function renderEmail(
   const t = createTranslator({ locale, messages: messages[locale], namespace: "email" });
   const k = KEY[kind];
   const when = `${formatLongDate(d.start, locale)}, ${formatSlotTime(d.start, locale)}`;
-  const subject = t(`${k}.subject`).replace(/[\r\n]+/g, " ").trim();
+  const subjectRaw =
+    kind === "appointment_reminder"
+      ? isTomorrow(d.start, d.now ?? new Date())
+        ? t("reminder.subjectTomorrow", { time: formatSlotTime(d.start, locale) })
+        : t("reminder.subjectDate", {
+            date: formatLongDate(d.start, locale),
+            time: formatSlotTime(d.start, locale),
+          })
+      : t(`${KEY[kind]}.subject` as `${Exclude<(typeof KEY)[EmailKind], "reminder">}.subject`);
+  const subject = subjectRaw.replace(/[\r\n]+/g, " ").trim();
   const greeting = t("greeting", { name: d.patientName });
   const intro = t(`${k}.intro`);
   const rows: [string, string][] = [
@@ -43,7 +55,10 @@ export function renderEmail(
     [t("dentist"), d.dentistName],
     [t("where"), `${clinic.name}, ${clinic.address}`],
   ];
-  const manage = d.manageUrl && kind !== "booking_cancelled" ? d.manageUrl : undefined;
+  // Reminders never carry a manage link: only the token hash is stored, so it cannot be rebuilt.
+  const manage =
+    d.manageUrl && kind !== "booking_cancelled" && kind !== "appointment_reminder" ? d.manageUrl : undefined;
+  const note = kind === "appointment_reminder" ? t("reminder.manage", { phone: clinic.phoneDisplay }) : undefined;
   const footer = t("footer", { phone: clinic.phoneDisplay, email: clinic.email });
 
   const text = [
@@ -53,6 +68,7 @@ export function renderEmail(
     "",
     ...rows.map(([a, b]) => `${a}: ${b}`),
     ...(manage ? ["", `${t("manage")}: ${manage}`] : []),
+    ...(note ? ["", note] : []),
     "",
     footer,
     clinic.name,
@@ -71,6 +87,7 @@ export function renderEmail(
     )
     .join("")}</table>
 ${manage ? `<p><a href="${esc(manage)}" style="display:inline-block;background:#0f5e5a;color:#ffffff;padding:10px 18px;border-radius:14px;text-decoration:none">${esc(t("manage"))}</a></p>` : ""}
+${note ? `<p>${esc(note)}</p>` : ""}
 <p style="color:#5d7472;font-size:13px">${esc(footer)}</p>
 </div></div></body></html>`;
 

@@ -31,7 +31,17 @@
     "cancelled": {
       "subject": "Randevunuz iptal edildi",
       "intro": "Randevunuz iptal edildi. Size uygun olduğunda yeni bir randevu alabilirsiniz."
+    },
+    "reminder": {
+      "subjectTomorrow": "Hatırlatma: yarın {time} randevunuz",
+      "subjectDate": "Hatırlatma: {date} {time} randevunuz",
+      "intro": "Yaklaşan randevunuzu hatırlatmak isteriz.",
+      "manage": "Değiştirmek veya iptal etmek için onay e-postanızdaki bağlantıyı kullanın veya bizi {phone} numarasından arayın."
     }
+  },
+  "sms": {
+    "reminderTomorrow": "{clinic}: yarın {time}'te {dentist} ile randevunuz var. Değişiklik için: {phone}",
+    "reminderDate": "{clinic}: {date} {time}'te {dentist} ile randevunuz var. Değişiklik için: {phone}"
   },
   "public": {
     "nav": {

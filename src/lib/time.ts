@@ -61,3 +61,17 @@ export function formatLongDate(d: Date | string, locale: Locale): string {
     month: "short",
   }).format(inst);
 }
+
+/** Short day + month, e.g. "18 Nov" / "18 Kasım" (Istanbul calendar). */
+export function formatShortDate(d: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(LOCALE_TAG[locale], {
+    timeZone: TZ,
+    day: "numeric",
+    month: locale === "tr" ? "long" : "short",
+  }).format(d);
+}
+
+/** True when `d` falls on the Istanbul calendar day after `now`. */
+export function isTomorrow(d: Date, now: Date): boolean {
+  return istanbulDateOf(d) === addDays(istanbulDateOf(now), 1);
+}
