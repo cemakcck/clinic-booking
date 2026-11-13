@@ -34,6 +34,17 @@ Import the repository and set these environment variables (Production):
 
 `vercel.json` schedules `GET /api/cron/reset` at 00:00 UTC (03:00 Istanbul). The route returns 401 without the `CRON_SECRET` bearer token and 403 unless `DEMO_MODE=1`, so it can never wipe a non-demo database.
 
+### Reminders schedule
+
+`.github/workflows/reminders.yml` calls `GET /api/cron/reminders` every 15 minutes (the route sends the 24-hour appointment reminders). Add two repository secrets (Settings, Secrets and variables, Actions):
+
+| Secret | Value |
+| --- | --- |
+| `REMINDERS_URL` | The full route URL, e.g. `https://clinic.cemakcicek.com/api/cron/reminders` |
+| `CRON_SECRET` | The same value as the app's `CRON_SECRET` |
+
+Until `REMINDERS_URL` is set (and on forks) the workflow skips with a notice. GitHub may delay scheduled runs, and disables them after 60 days without repository activity; re-enable the workflow in the Actions tab if that happens. The route works with and without `DEMO_MODE`.
+
 ## 3. Checks after the first deploy
 
 - Book an appointment, then press "Try it as Receptionist": the calendar should open on that day with the booking highlighted.
