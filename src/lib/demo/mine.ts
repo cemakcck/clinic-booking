@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { authSecret } from "@/lib/security/auth-secret";
 
 /**
  * "Mine" cookie: the ids of the last few appointments booked in this browser, so the staff
@@ -21,9 +22,7 @@ export const mineCookieOptions = {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function sign(payload: string): string {
-  const secret = process.env.BETTER_AUTH_SECRET;
-  if (!secret) throw new Error("BETTER_AUTH_SECRET is not set");
-  return createHmac("sha256", secret).update(`demo_mine:${payload}`).digest("base64url");
+  return createHmac("sha256", authSecret()).update(`demo_mine:${payload}`).digest("base64url");
 }
 
 /** The signed cookie value for a list of appointment ids (non-uuids dropped, capped at 5). */

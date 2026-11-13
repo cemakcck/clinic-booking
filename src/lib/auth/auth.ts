@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { sharedDb, type Db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
+import { authSecret } from "@/lib/security/auth-secret";
 
 /**
  * Endpoints the HTTP router refuses (404). The demo accounts are shared by every visitor, so
@@ -28,6 +29,7 @@ export const DISABLED_AUTH_PATHS = [
 
 function createAuth(database: Db) {
   return betterAuth({
+    secret: authSecret(),
     database: drizzleAdapter(database, { provider: "pg", schema }),
     disabledPaths: DISABLED_AUTH_PATHS,
     databaseHooks: {

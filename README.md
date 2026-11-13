@@ -171,7 +171,7 @@ npm run user:create -- --email x@clinic.example --name "Dr. X" --role dentist --
 
 ```bash
 npm run lint && npm run typecheck
-npm test                          # 94 unit + 159 integration tests (needs the database from npm run db:up)
+npm test                          # 99 unit + 159 integration tests (needs the database from npm run db:up)
 npx playwright install chromium   # once, for the end-to-end tests
 npm run test:e2e                  # 80 Playwright tests; starts its own dev servers on :3200 and :3201
 ```

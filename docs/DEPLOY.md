@@ -24,7 +24,7 @@ Import the repository and set these environment variables (Production):
 | Variable | Value |
 | --- | --- |
 | `DATABASE_URL` | Supabase transaction-pooler URL (port 6543) |
-| `BETTER_AUTH_SECRET` | A fresh random value, e.g. `openssl rand -base64 32`. Never the `.env.example` placeholder |
+| `BETTER_AUTH_SECRET` | A fresh random value, e.g. `openssl rand -base64 32`. Never the `.env.example` placeholder: a production deploy refuses to start with it |
 | `BETTER_AUTH_URL`, `SITE_URL` | The public URL, e.g. `https://clinic.cemakcicek.com`. Otherwise manage links in emails point at localhost |
 | `DEMO_MODE` | `1` for the public demo |
 | `DEMO_PASSWORD` | Password of the seeded staff accounts (the same one used for `demo:reset`) |
